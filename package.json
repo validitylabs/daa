@@ -1,0 +1,54 @@
+{
+  "name": "daa",
+  "version": "1.0.0",
+  "description": "daa",
+  "author": "Igor Stepushchik <istepushchik@elilink.com> (https://elilink.com)",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": "^8.0.x"
+  },
+  "scripts": {
+    "start": "npm run testrpc",
+    "serve": "php -S localhost:8888",
+    "console": "truffle console",
+    "compile": "truffle compile --all",
+    "migrate": "truffle migrate --compile-all --reset",
+    "testrpc": "testrpc --gasPrice 1000000000 --port 8555 --mnemonic 'vital hedgehog drink result veteran juice jacket chat prepare small afraid orange'",
+    "clean": "rm -fr build; rm -fr bin; rm -fr coverage-js",
+    "reset": "rm -fr node_modules; npm run clean",
+    "upgrade": "npm run reset; yarn upgrade",
+    "docs:init": "doxity init",
+    "docs:compile": "doxity compile",
+    "docs:develop": "doxity develop",
+    "docs:publish": "doxity publish",
+    "docs:build": "doxity build",
+    "test": "truffle test",
+    "coverage": "solidity-coverage"
+  },
+  "devDependencies": {
+    "@digix/doxity": "^0.5.2",
+    "babel-eslint": "^7.2.3",
+    "browserify": "^14.5.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^2.0.1",
+    "eslint": "^4.10.0",
+    "eslint-plugin-babel": "^4.1.2",
+    "ethereumjs-testrpc": "^4.1.3",
+    "jsdoc": "^3.5.5",
+    "solidity-coverage": "^0.2.7",
+    "truffle": "^3.4.11",
+    "web3": "^0.19.1",
+    "zeppelin-solidity": "git://github.com/jakub-wojciechowski/zeppelin-solidity.git"
+  },
+  "optionalDevDependencies": {
+    "fsevents": "*"
+  },
+  "dependencies": {
+    "browser-builds": "git://github.com/ethereumjs/browser-builds.git",
+    "ethereumjs-tx": "^1.3.3",
+    "keythereum": "^1.0.2",
+    "truffle-contract": "^3.0.0"
+  }
+}

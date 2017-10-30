@@ -1,0 +1,9 @@
+.eslintcache
+.DS_Store
+/node_modules
+/bin
+/build
+/coverage
+/coverageEnv
+coverage.json
+/out
