@@ -5,7 +5,7 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 
 /**
-@title BaseShop
+@title Base
 */
 contract Base is Ownable {
 
