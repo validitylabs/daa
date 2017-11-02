@@ -1,17 +1,20 @@
 pragma solidity ^0.4.15;
 
 
-contract Dissolution {
+import './ExtraordinaryGA.sol';
 
-    function proposeDissolution() {
+
+contract Dissolution is ExtraordinaryGA {
+
+    function proposeDissolution() public onlyDuringGA onlyMember {
 
     }
 
-    function voteForDissolution() {
+    function voteForDissolution(bool favor) public onlyMember {
 
     }
 
-    function concludeVoteForDissolution() {
+    function concludeVoteForDissolution() internal {
 
     }
 

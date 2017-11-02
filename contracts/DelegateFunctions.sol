@@ -1,41 +1,44 @@
 pragma solidity ^0.4.15;
 
 
-contract DelegateFunctions {
+import './ExtraordinaryGA.sol';
 
-    function addWhitelister() {
 
-    }
+contract DelegateFunctions is ExtraordinaryGA {
 
-    function removeWhitelister() {
-
-    }
-
-    function proposeDelegateCandidacy() {
+    function addWhitelister() public onlyDelegate {
 
     }
 
-    function voteForDelegate() {
+    function removeWhitelister() public onlyDelegate {
 
     }
 
-    function concludeVoteForDelegate() {
+    function proposeDelegateCandidacy() public onlyMember {
+        // msg.sender
+    }
+
+    function voteForDelegate(address member) public onlyMember {
 
     }
 
-    function stepDownAndProposeGA() {
+    function stepDownAndProposeGA() public onlyDelegate {
 
     }
 
-    function proposeDischarge() {
+    function proposeDischarge() public onlyDelegate onlyDuringAnnualGA {
 
     }
 
-    function voteForDischarge() {
+    function voteForDischarge() public onlyDelegate {
 
     }
 
-    function concludeVoteForDischarge() {
+    function concludeVoteForDelegate(address member) internal {
+
+    }
+
+    function concludeVoteForDischarge() internal {
 
     }
 

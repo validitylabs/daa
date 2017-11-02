@@ -1,5 +1,5 @@
-var Base = artifacts.require("./Base.sol");
+var DAA = artifacts.require("./DAA.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(Base);
+  deployer.deploy(DAA);
 };

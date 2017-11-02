@@ -1,17 +1,20 @@
 pragma solidity ^0.4.15;
 
 
-contract ChangeStatutes {
+import './ExtraordinaryGA.sol';
 
-    function setHashOfStatutes() {
+
+contract ChangeStatutes is ExtraordinaryGA {
+
+    function setHashOfStatutes(bytes32 hash) public onlyMember onlyDuringGA {
 
     }
 
-    function voteForChangeStatutes() {
+    function voteForChangeStatutes(bool favor) public onlyMember {
 
     }
 
-    function concludeVoteForChangeStatutes() {
+    function concludeVoteForChangeStatutes() internal {
 
     }
 

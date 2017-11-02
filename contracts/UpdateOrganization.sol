@@ -1,17 +1,21 @@
 pragma solidity ^0.4.15;
 
 
-contract UpdateOrganization {
+import './ExtraordinaryGA.sol';
 
-    function proposeUpdate() {
+
+contract UpdateOrganization is ExtraordinaryGA {
+
+    // TODO: args
+    function proposeUpdate() public onlyMember onlyDuringGA {
 
     }
 
-    function voteForUpdate() {
+    function voteForUpdate(bool favor) public onlyMember {
 
     }
 
-    function concludeVoteForUpdate() {
+    function concludeVoteForUpdate() internal {
 
     }
 

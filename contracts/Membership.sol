@@ -3,41 +3,51 @@ pragma solidity ^0.4.15;
 
 contract Membership {
 
-    function requestMembership() {
+    enum MemberTypes {NOT_MEMBER, EXISTING_MEMBER, DELEGATE, WHITELISTER}
 
+    mapping (address => MemberTypes) public members;
+    mapping (address => uint256) public whitelistMembers;
+
+
+    modifier onlyMember() {
+        require(members[msg.sender] == MemberTypes.EXISTING_MEMBER
+            || members[msg.sender] == MemberTypes.WHITELISTER
+            || members[msg.sender] == MemberTypes.DELEGATE); // TODO: ?
+        _;
     }
 
-    function whitelistMember() {
-
+    modifier onlyDelegate() {
+        require(members[msg.sender] == MemberTypes.DELEGATE);
+        _;
     }
 
-    function concludeJoining() {
-
-    }
-
-    function payMembership() {
-
-    }
-
-    function removeMemberThatDidntPay() {
-
-    }
-
-
-    function proposeExpelMember() {
-
-    }
-
-    function voteToExpelMember() {
-
-    }
-
-    function concludeExpel() {
-
+    modifier onlyWhitelister() {
+        require(members[msg.sender] == MemberTypes.WHITELISTER);
+        _;
     }
 
 
-    function leaveDAA() {
+    function requestMembership() public {
+        // msg.sender
+    }
+
+    function whitelistMember(address member) public onlyWhitelister {
+
+    }
+
+    function payMembership() public payable {
+        // msg.sender, msg.value
+    }
+
+    function leaveDAA() public {
+        // msg.sender
+    }
+
+    function concludeJoining(address member) internal {
+
+    }
+
+    function removeMemberThatDidntPay(address member) internal {
 
     }
 
