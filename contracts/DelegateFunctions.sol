@@ -6,12 +6,13 @@ import './ExtraordinaryGA.sol';
 
 contract DelegateFunctions is ExtraordinaryGA {
 
-    function addWhitelister() public onlyDelegate {
-
+    function addWhitelister(address member) public onlyDelegate {
+        members[member] = Member(MemberTypes.WHITELISTER, 0, false);
     }
 
-    function removeWhitelister() public onlyDelegate {
-
+    function removeWhitelister(address member) public onlyDelegate {
+        require(members[member].memberType == MemberTypes.WHITELISTER);
+        delete members[member];
     }
 
     function proposeDelegateCandidacy() public onlyMember {
@@ -22,7 +23,7 @@ contract DelegateFunctions is ExtraordinaryGA {
 
     }
 
-    function stepDownAndProposeGA() public onlyDelegate {
+    function stepDownAndProposeGA(uint256 date) public onlyDelegate {
 
     }
 
