@@ -12,10 +12,14 @@ contract Membership {
     }
 
     mapping (address => Member) public members;
+    uint256 allMembers;
 
     // member => (whitelister => time)
     // mapping (address => mapping(address => uint256)) public whitelistMembers;
 
+    function() {
+        payMembership();
+    }
 
     modifier onlyMember() {
         require(members[msg.sender].memberType == MemberTypes.EXISTING_MEMBER
@@ -39,13 +43,22 @@ contract Membership {
         members[msg.sender] = Member(MemberTypes.NOT_MEMBER, 0, false);
     }
 
-    function whitelistMember(address member) public onlyWhitelister {
+    function whitelistMember(address addrs) public onlyWhitelister {
         // TODO: prevent duplication
-        members[member].whitelisted += 1;
+        members[addrs].whitelisted += 1;
 
-        if(members[member].whitelisted >= 2 && members[member].paid) {
-            concludeJoining(member);
+        if(members[addrs].whitelisted >= 2 && members[addrs].paid) {
+            concludeJoining(addrs);
         }
+    }
+
+    function addWhitelister(address addrs) public onlyDelegate {
+        members[addrs] = Member(MemberTypes.WHITELISTER, 0, false);
+    }
+
+    function removeWhitelister(address addrs) public onlyDelegate {
+        require(members[addrs].memberType == MemberTypes.WHITELISTER);
+        delete members[addrs];
     }
 
     function payMembership() public payable {
@@ -62,14 +75,20 @@ contract Membership {
         }
 
         delete members[msg.sender];
+        allMembers -= 1;
     }
 
-    function concludeJoining(address member) private {
-        members[member].memberType = MemberTypes.EXISTING_MEMBER;
+    function getAllMembersCount() public constant returns (uint256) {
+        return allMembers;
     }
 
-    function removeMemberThatDidntPay(address member) internal {
-        delete members[member];
+    function removeMemberThatDidntPay(address addrs) internal {
+        delete members[addrs];
+    }
+
+    function concludeJoining(address addrs) private {
+        members[addrs].memberType = MemberTypes.EXISTING_MEMBER;
+        allMembers += 1;
     }
 
 }

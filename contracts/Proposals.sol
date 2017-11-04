@@ -2,9 +2,12 @@ pragma solidity ^0.4.15;
 
 
 import './Membership.sol';
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 
 
 contract Proposals is Membership {
+
+    using SafeMath for uint256;
 
     struct Proposal {
         address submitter;
@@ -17,11 +20,42 @@ contract Proposals is Membership {
         uint256 votesAgainst;
         // mapping(address => bool) voted;
         bool concluded;
+        bool result;
     }
 
-    Proposal[] public proposals;
+    Proposal[] proposals;
 
-    // TODO: return index of the proposal
+    // Proposal has to be readable by external SC
+    function getProposal(uint256 proposalId) external constant returns (
+        address submitter,
+        bytes32 name,
+        uint256 amount,
+        address destinationAddress,
+        uint256 startTime,
+        uint256 duration,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        bool concluded,
+        bool result
+    )
+    {
+        // TODO: Variable is declared as a storage pointer.
+        // Use an explicit "storage" keyword to silence this warning.
+        Proposal pr = proposals[proposalId];
+        return (
+            pr.submitter,
+            pr.name,
+            pr.amount,
+            pr.destinationAddress,
+            pr.startTime,
+            pr.duration,
+            pr.votesFor,
+            pr.votesAgainst,
+            pr.concluded,
+            pr.result
+        );
+    }
+
     function submitProposal(
         bytes32 name,
         uint256 amount,
@@ -30,8 +64,10 @@ contract Proposals is Membership {
     )
         public
         onlyMember
+        returns (uint256)
     {
-        require(duration >= 1 weeks && duration <= 60 days);
+        require(// duration >= 1 weeks && // TODO: can be 10 mins for Update Organization
+            duration <= 60 days);
 
         proposals.push(Proposal(
             msg.sender,
@@ -42,30 +78,35 @@ contract Proposals is Membership {
             duration,
             0,
             0,
+            false,
             false
             )
         );
+        return proposals.length - 1;
     }
 
-    function extendProposalDuration(uint256 proposal, uint256 time) public onlyMember {
-        require(proposals[proposal].submitter == msg.sender);
-        require(proposals[proposal].duration + time <= 60 days);
+    function extendProposalDuration(uint256 proposalId, uint256 time) public onlyMember {
+        require(proposals[proposalId].submitter == msg.sender);
+        require(proposals[proposalId].duration.add(time) <= 60 days);
 
-        proposals[proposal].duration += time;
+        proposals[proposalId].duration = proposals[proposalId].duration.add(time);
     }
 
-    function voteForProposal(uint256 proposal, bool favor) public onlyMember {
-        require(proposals[proposal].startTime + proposals[proposal].duration < now);
-
-        if (favor) {
-            proposals[proposal].votesFor += 1;
+    function voteForProposal(uint256 proposalId, bool favor) public onlyMember {
+        if (proposals[proposalId].startTime.add(proposals[proposalId].duration) < now) {
+            if (favor) {
+                proposals[proposalId].votesFor += 1;
+            } else {
+                proposals[proposalId].votesAgainst += 1;
+            }
         } else {
-            proposals[proposal].votesAgainst += 1;
+            concludeProposal(proposalId);
         }
     }
 
-    function concludeProposal(uint256 proposal) internal {
-        proposals[proposal].concluded = true;
+    function concludeProposal(uint256 proposalId) internal {
+        proposals[proposalId].concluded = true;
+        proposals[proposalId].result = proposals[proposalId].votesFor > proposals[proposalId].votesAgainst;
     }
 
 }
