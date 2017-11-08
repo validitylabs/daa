@@ -1,7 +1,11 @@
 pragma solidity ^0.4.15;
 
 
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+
+
 contract Membership {
+    using SafeMath for uint256;
 
     enum MemberTypes {NOT_MEMBER, EXISTING_MEMBER, DELEGATE, WHITELISTER}
 
@@ -45,7 +49,7 @@ contract Membership {
 
     function whitelistMember(address addrs) public onlyWhitelister {
         // TODO: prevent duplication
-        members[addrs].whitelisted += 1;
+        members[addrs].whitelisted = members[addrs].whitelisted.add(1);
 
         if(members[addrs].whitelisted >= 2 && members[addrs].paid) {
             concludeJoining(addrs);
@@ -75,7 +79,7 @@ contract Membership {
         }
 
         delete members[msg.sender];
-        allMembers -= 1;
+        allMembers = allMembers.sub(1);
     }
 
     function getAllMembersCount() public constant returns (uint256) {
@@ -88,7 +92,7 @@ contract Membership {
 
     function concludeJoining(address addrs) private {
         members[addrs].memberType = MemberTypes.EXISTING_MEMBER;
-        allMembers += 1;
+        allMembers = allMembers.add(1);
     }
 
 }

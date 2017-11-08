@@ -2,12 +2,9 @@ pragma solidity ^0.4.15;
 
 
 import './Membership.sol';
-import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 
 
 contract Proposals is Membership {
-
-    using SafeMath for uint256;
 
     struct Proposal {
         address submitter;
@@ -22,6 +19,8 @@ contract Proposals is Membership {
         bool concluded;
         bool result;
     }
+
+    uint256 constant maxDaysForProposal = 60;
 
     Proposal[] proposals;
 
@@ -67,7 +66,7 @@ contract Proposals is Membership {
         returns (uint256)
     {
         require(// duration >= 1 weeks && // TODO: can be 10 mins for Update Organization
-            duration <= 60 days);
+            duration <= maxDaysForProposal * 1 days);
 
         proposals.push(Proposal(
             msg.sender,
@@ -82,12 +81,12 @@ contract Proposals is Membership {
             false
             )
         );
-        return proposals.length - 1;
+        return proposals.length.sub(1);
     }
 
     function extendProposalDuration(uint256 proposalId, uint256 time) public onlyMember {
         require(proposals[proposalId].submitter == msg.sender);
-        require(proposals[proposalId].duration.add(time) <= 60 days);
+        require(proposals[proposalId].duration.add(time) <= maxDaysForProposal * 1 days);
 
         proposals[proposalId].duration = proposals[proposalId].duration.add(time);
     }
@@ -95,9 +94,9 @@ contract Proposals is Membership {
     function voteForProposal(uint256 proposalId, bool favor) public onlyMember {
         if (proposals[proposalId].startTime.add(proposals[proposalId].duration) < now) {
             if (favor) {
-                proposals[proposalId].votesFor += 1;
+                proposals[proposalId].votesFor = proposals[proposalId].votesFor.add(1);
             } else {
-                proposals[proposalId].votesAgainst += 1;
+                proposals[proposalId].votesAgainst = proposals[proposalId].votesAgainst.add(1);
             }
         } else {
             concludeProposal(proposalId);

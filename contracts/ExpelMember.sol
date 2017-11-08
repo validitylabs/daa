@@ -26,7 +26,7 @@ contract ExpelMember is Proposals {
     function concludeExpel(uint256 proposalId) private {
         // ⅔ have to vote “yes”
         // for * 3 >= (for + against) * 2
-        uint256 allVoted = proposals[proposalId].votesFor + proposals[proposalId].votesAgainst;
+        uint256 allVoted = proposals[proposalId].votesFor.add(proposals[proposalId].votesAgainst);
         bool res = proposals[proposalId].votesFor * uint(3) >= allVoted * uint(2) &&
             allVoted * uint(10) >= getAllMembersCount();
 

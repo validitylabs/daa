@@ -25,7 +25,7 @@ contract UpdateOrganization is ExtraordinaryGA {
         // ⅔ have to vote “yes”
         // for * 3 >= (for + against) * 2
         proposals[proposalId].result = proposals[proposalId].votesFor * uint(3) >=
-            (proposals[proposalId].votesFor + proposals[proposalId].votesAgainst) * uint(2);
+            proposals[proposalId].votesFor.add(proposals[proposalId].votesAgainst) * uint(2);
     }
 
 }
