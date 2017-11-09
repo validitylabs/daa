@@ -33,12 +33,13 @@ contract ExtraordinaryGA is Proposals {
     }
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
-        uint256 proposalId = super.submitProposal("Propose General Assembly Date", 0, address(0), 2 weeks);
+        uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
+            "Propose General Assembly Date", 0, address(0), 2 weeks);
         datesForVoting[proposalId] = date;
     }
 
     function voteForGeneralAssemblyDate(uint256 proposalId, bool favor) public onlyMember {
-        super.voteForProposal(proposalId, favor);
+        super.voteForProposal(GENERAL_ASSEMBLY, proposalId, favor);
     }
 
     function setAnnualAssemblyDate(uint256 date) public onlyDelegate {
@@ -56,17 +57,16 @@ contract ExtraordinaryGA is Proposals {
     }
 
     function concludeProposal(uint256 proposalId) internal {
-        // super.concludeProposal(proposalId);
-        proposals[proposalId].concluded = true;
         concludeGeneralAssemblyVote(proposalId);
     }
 
     function concludeGeneralAssemblyVote(uint256 proposalId) private {
         // ⅕ of all members have to vote yes
         // for * 5 >= (all members) * 1
-        bool res = proposals[proposalId].votesFor * uint(5) >= getAllMembersCount();
+        Proposal storage proposal = proposals[GENERAL_ASSEMBLY][proposalId];
+        bool res = proposal.votesFor * uint(5) >= getAllMembersCount();
 
-        proposals[proposalId].result = res;
+        proposal.result = res;
         if (res) {
             uint256 date = datesForVoting[proposalId];
             generalAssemblies.push(GA(date, false, false));

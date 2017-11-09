@@ -6,17 +6,18 @@ import './Proposals.sol';
 
 contract DelegateCandidacy is Proposals {
 
+    uint256 private constant voteTimeInMins = 10;
+
     function proposeDelegateCandidacy() public onlyMember {
-        super.submitProposal("Propose Delegate Candidacy", 0, address(0), 10 minutes);
+        super.submitProposal(DELEGATE_CANDIDACY, "Propose Delegate Candidacy",
+            0, address(0), voteTimeInMins * 1 minutes);
     }
 
     function voteForDelegate(uint256 proposalId, bool favor) public onlyMember {
-        super.voteForProposal(proposalId, favor);
+        super.voteForProposal(DELEGATE_CANDIDACY, proposalId, favor);
     }
 
     function concludeProposal(uint256 proposalId) internal {
-        // super.concludeProposal(proposalId);
-        proposals[proposalId].concluded = true;
         concludeVoteForDelegate(proposalId);
     }
 

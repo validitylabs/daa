@@ -6,26 +6,27 @@ import './ExtraordinaryGA.sol';
 
 contract UpdateOrganization is ExtraordinaryGA {
 
+    uint256 private constant voteTimeInMins = 10;
+
     // TODO: args
     function proposeUpdate() public onlyMember onlyDuringGA {
-        super.submitProposal("Update Organization", 0, address(0), 10 minutes);
+        super.submitProposal(UPDATE_ORGANIZATION, "Update Organization", 0, address(0), voteTimeInMins * 1 minutes);
     }
 
     function voteForUpdate(uint256 proposalId, bool favor) public onlyMember onlyDuringGA {
-        super.voteForProposal(proposalId, favor);
+        super.voteForProposal(UPDATE_ORGANIZATION, proposalId, favor);
     }
 
     function concludeProposal(uint256 proposalId) internal {
-        // super.concludeProposal(proposalId);
-        proposals[proposalId].concluded = true;
         concludeVoteForUpdate(proposalId);
     }
 
     function concludeVoteForUpdate(uint256 proposalId) private {
         // ⅔ have to vote “yes”
         // for * 3 >= (for + against) * 2
-        proposals[proposalId].result = proposals[proposalId].votesFor * uint(3) >=
-            proposals[proposalId].votesFor.add(proposals[proposalId].votesAgainst) * uint(2);
+        Proposal storage proposal = proposals[UPDATE_ORGANIZATION][proposalId];
+        proposal.result = proposal.votesFor * uint(3) >=
+            proposal.votesFor.add(proposal.votesAgainst) * uint(2);
     }
 
 }

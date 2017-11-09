@@ -6,25 +6,26 @@ import './ExtraordinaryGA.sol';
 
 contract ChangeStatutes is ExtraordinaryGA {
 
+    uint256 private constant voteTimeInMins = 10;
+
     function setHashOfStatutes(bytes32 hashOfStatutes) public onlyMember onlyDuringGA {
-        super.submitProposal(hashOfStatutes, 0, address(0), 10 minutes);
+        super.submitProposal(CHANGE_STATUTES, hashOfStatutes, 0, address(0), voteTimeInMins * 1 minutes);
     }
 
     function voteForChangeStatutes(uint256 proposalId, bool favor) public onlyMember onlyDuringGA {
-        super.voteForProposal(proposalId, favor);
+        super.voteForProposal(CHANGE_STATUTES, proposalId, favor);
     }
 
     function concludeProposal(uint256 proposalId) internal {
-        // super.concludeProposal(proposalId);
-        proposals[proposalId].concluded = true;
         concludeVoteForChangeStatutes(proposalId);
     }
 
     function concludeVoteForChangeStatutes(uint256 proposalId) private {
         // ⅔ have to vote “yes”
         // for * 3 >= (for + against) * 2
-        proposals[proposalId].result = proposals[proposalId].votesFor * uint(3) >=
-            proposals[proposalId].votesFor.add(proposals[proposalId].votesAgainst) * uint(2);
+        Proposal storage proposal = proposals[CHANGE_STATUTES][proposalId];
+        proposal.result = proposal.votesFor * uint(3) >=
+            proposal.votesFor.add(proposal.votesAgainst) * uint(2);
     }
 
 }

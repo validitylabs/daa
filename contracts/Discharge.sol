@@ -6,17 +6,17 @@ import './ExtraordinaryGA.sol';
 
 contract Discharge is ExtraordinaryGA {
 
+    uint256 private constant voteTimeInMins = 10;
+
     function proposeDischarge() public onlyDelegate onlyDuringAnnualGA {
-        super.submitProposal("Propose Discharge", 0, address(0), 10 minutes);
+        super.submitProposal(DISCHARGE, "Propose Discharge", 0, address(0), voteTimeInMins * 1 minutes);
     }
 
     function voteForDischarge(uint256 proposalId, bool favor) public onlyMember onlyDuringAnnualGA {
-        super.voteForProposal(proposalId, favor);
+        super.voteForProposal(DISCHARGE, proposalId, favor);
     }
 
     function concludeProposal(uint256 proposalId) internal {
-        // super.concludeProposal(proposalId);
-        proposals[proposalId].concluded = true;
         concludeVoteForDischarge(proposalId);
     }
 

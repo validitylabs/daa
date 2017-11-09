@@ -6,6 +6,18 @@ import './Membership.sol';
 
 contract Proposals is Membership {
 
+    // enum ProposalType {SIMPLE_PROPOSAL, EXPEL_MEMBER, DELEGATE_CANDIDACY, DISCHARGE,
+    //    GENERAL_ASSEMBLY, DISSOLUTION, CHANGE_STATUTES, UPDATE_ORGANIZATION}
+
+    uint constant SIMPLE_PROPOSAL = 0;
+    uint constant EXPEL_MEMBER = 1;
+    uint constant DELEGATE_CANDIDACY = 2;
+    uint constant DISCHARGE = 3;
+    uint constant GENERAL_ASSEMBLY = 4;
+    uint constant DISSOLUTION = 5;
+    uint constant CHANGE_STATUTES = 6;
+    uint constant UPDATE_ORGANIZATION = 7;
+
     struct Proposal {
         address submitter;
         bytes32 name;
@@ -20,55 +32,27 @@ contract Proposals is Membership {
         bool result;
     }
 
-    uint256 constant maxDaysForProposal = 60;
+    uint256 private constant voteTimeInDays = 60;
 
-    Proposal[] proposals;
+    mapping(uint256 => Proposal[]) proposals;
 
-    // Proposal has to be readable by external SC
-    function getProposal(uint256 proposalId) external constant returns (
-        address submitter,
-        bytes32 name,
-        uint256 amount,
-        address destinationAddress,
-        uint256 startTime,
-        uint256 duration,
-        uint256 votesFor,
-        uint256 votesAgainst,
-        bool concluded,
-        bool result
-    )
-    {
-        // TODO: Variable is declared as a storage pointer.
-        // Use an explicit "storage" keyword to silence this warning.
-        Proposal pr = proposals[proposalId];
-        return (
-            pr.submitter,
-            pr.name,
-            pr.amount,
-            pr.destinationAddress,
-            pr.startTime,
-            pr.duration,
-            pr.votesFor,
-            pr.votesAgainst,
-            pr.concluded,
-            pr.result
-        );
-    }
+    function concludeProposal(uint256 proposalId) internal;
 
     function submitProposal(
+        uint256 proposalType,
         bytes32 name,
         uint256 amount,
         address destinationAddress,
         uint256 duration
     )
-        public
+        internal
         onlyMember
         returns (uint256)
     {
         require(// duration >= 1 weeks && // TODO: can be 10 mins for Update Organization
-            duration <= maxDaysForProposal * 1 days);
+            duration <= voteTimeInDays * 1 days);
 
-        proposals.push(Proposal(
+        proposals[proposalType].push(Proposal(
             msg.sender,
             name,
             amount,
@@ -81,31 +65,57 @@ contract Proposals is Membership {
             false
             )
         );
-        return proposals.length.sub(1);
+        return proposals[proposalType].length.sub(1);
     }
 
-    function extendProposalDuration(uint256 proposalId, uint256 time) public onlyMember {
-        require(proposals[proposalId].submitter == msg.sender);
-        require(proposals[proposalId].duration.add(time) <= maxDaysForProposal * 1 days);
+    function extendProposalDuration(uint256 proposalType, uint256 proposalId, uint256 time) internal onlyMember {
+        Proposal storage proposal = proposals[proposalType][proposalId];
+        require(proposal.submitter == msg.sender);
+        require(proposal.duration.add(time) <= voteTimeInDays * 1 days);
 
-        proposals[proposalId].duration = proposals[proposalId].duration.add(time);
+        proposal.duration = proposal.duration.add(time);
     }
 
-    function voteForProposal(uint256 proposalId, bool favor) public onlyMember {
-        if (proposals[proposalId].startTime.add(proposals[proposalId].duration) < now) {
+    function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor) internal onlyMember {
+        Proposal storage proposal = proposals[proposalType][proposalId];
+        if (proposal.startTime.add(proposal.duration) < now) {
             if (favor) {
-                proposals[proposalId].votesFor = proposals[proposalId].votesFor.add(1);
+                proposal.votesFor = proposal.votesFor.add(1);
             } else {
-                proposals[proposalId].votesAgainst = proposals[proposalId].votesAgainst.add(1);
+                proposal.votesAgainst = proposal.votesAgainst.add(1);
             }
         } else {
+            proposal.concluded = true;
             concludeProposal(proposalId);
         }
     }
 
-    function concludeProposal(uint256 proposalId) internal {
-        proposals[proposalId].concluded = true;
-        proposals[proposalId].result = proposals[proposalId].votesFor > proposals[proposalId].votesAgainst;
+    function getProposal(uint256 proposalType, uint256 proposalId) internal constant returns (
+        address submitter,
+        bytes32 name,
+        uint256 amount,
+        address destinationAddress,
+        uint256 startTime,
+        uint256 duration,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        bool concluded,
+        bool result
+    )
+    {
+        Proposal storage pr = proposals[proposalType][proposalId];
+        return (
+            pr.submitter,
+            pr.name,
+            pr.amount,
+            pr.destinationAddress,
+            pr.startTime,
+            pr.duration,
+            pr.votesFor,
+            pr.votesAgainst,
+            pr.concluded,
+            pr.result
+        );
     }
 
 }
