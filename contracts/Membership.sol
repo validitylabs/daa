@@ -12,6 +12,7 @@ contract Membership {
     struct Member {
         MemberTypes memberType;
         uint256 whitelisted;
+        mapping(address => bool) whitelistedBy;
         bool paid;
     }
 
@@ -48,10 +49,13 @@ contract Membership {
     }
 
     function whitelistMember(address addrs) public onlyWhitelister {
-        // TODO: prevent duplication
-        members[addrs].whitelisted = members[addrs].whitelisted.add(1);
+        Member storage member = members[addrs];
+        require(!member.whitelistedBy[msg.sender]);
 
-        if(members[addrs].whitelisted >= 2 && members[addrs].paid) {
+        member.whitelistedBy[msg.sender] = true;
+        member.whitelisted = member.whitelisted.add(1);
+
+        if(member.whitelisted >= 2 && member.paid) {
             concludeJoining(addrs);
         }
     }

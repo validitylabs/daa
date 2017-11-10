@@ -21,7 +21,8 @@ contract Discharge is ExtraordinaryGA {
     }
 
     function concludeVoteForDischarge(uint256 proposalId) private {
-        // TODO:
+        Proposal storage proposal = proposals[DISCHARGE][proposalId];
+        proposal.result = proposal.votesFor > proposal.votesAgainst;
     }
 
 }

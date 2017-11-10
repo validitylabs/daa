@@ -27,7 +27,7 @@ contract Proposals is Membership {
         uint256 duration;
         uint256 votesFor;
         uint256 votesAgainst;
-        // mapping(address => bool) voted;
+        mapping(address => bool) voted;
         bool concluded;
         bool result;
     }
@@ -78,7 +78,10 @@ contract Proposals is Membership {
 
     function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor) internal onlyMember {
         Proposal storage proposal = proposals[proposalType][proposalId];
+        require(!proposal.voted[msg.sender]);
+
         if (proposal.startTime.add(proposal.duration) < now) {
+            proposal.voted[msg.sender] = true;
             if (favor) {
                 proposal.votesFor = proposal.votesFor.add(1);
             } else {

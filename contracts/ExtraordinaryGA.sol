@@ -8,19 +8,22 @@ contract ExtraordinaryGA is Proposals {
 
     struct GA {
         uint256 date;
+        uint256 finished;
         bool annual;
-        bool finished;
     }
+
+    uint256 private constant voteTimeInDays = 14;
 
     GA[] public generalAssemblies;
     uint256 current;
 
     mapping (uint256 => uint256) datesForVoting;
 
+
     // TODO:
     modifier onlyDuringGA() {
         require(now >= generalAssemblies[current].date
-            && !generalAssemblies[current].finished);
+            && generalAssemblies[current].finished == 0);
         _;
     }
 
@@ -28,13 +31,13 @@ contract ExtraordinaryGA is Proposals {
     modifier onlyDuringAnnualGA() {
         require(generalAssemblies[current].annual
             && now >= generalAssemblies[current].date
-            && !generalAssemblies[current].finished);
+            && generalAssemblies[current].finished == 0);
         _;
     }
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
         uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
-            "Propose General Assembly Date", 0, address(0), 2 weeks);
+            "Propose General Assembly Date", 0, address(0), voteTimeInDays * 1 days);
         datesForVoting[proposalId] = date;
     }
 
@@ -43,9 +46,11 @@ contract ExtraordinaryGA is Proposals {
     }
 
     function setAnnualAssemblyDate(uint256 date) public onlyDelegate {
-        // TODO:
         // Minimally 1 month before date of GA
         // After date of general assembly 9 months blocked
+        require(now < date - 30 * 1 days);
+        require(date > generalAssemblies[current].finished + 273 * 1 days); // TODO: 9 months
+        generalAssemblies.push(GA(date, 0, true));
     }
 
     function stepDownAndProposeGA(uint256 date) public onlyDelegate {
@@ -69,7 +74,7 @@ contract ExtraordinaryGA is Proposals {
         proposal.result = res;
         if (res) {
             uint256 date = datesForVoting[proposalId];
-            generalAssemblies.push(GA(date, false, false));
+            generalAssemblies.push(GA(date, 0, false));
         }
     }
 
