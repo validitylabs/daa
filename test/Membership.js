@@ -14,6 +14,15 @@ function toAscii(hexString) {
 }
 */
 
+/*
+const MemberTypes = {
+    NOT_MEMBER: 0,
+    EXISTING_MEMBER: 1,
+    DELEGATE: 2,
+    WHITELISTER: 3
+}
+*/
+
 const NOT_MEMBER = 0;
 const EXISTING_MEMBER = 1;
 const DELEGATE = 2;
@@ -25,13 +34,25 @@ contract('Membership', function(accounts) {
 
     let membership;
 
+    const membershipPrice = new web3.BigNumber(web3.toWei(1, 'ether'));
+
+    const delegate = accounts[0];
+    const newMember = accounts[2];
+    const newWhitelister1 = accounts[3];
+    const newWhitelister2 = accounts[4];
+
     beforeEach(async function() {
         membership = await Membership.new();
     });
 
-    it('should request membership', async function() {
-        const newMember = accounts[2];
+    it('should check the contract after creation', async function() {
+        const member = await membership.getMember(delegate); // accounts[0]
+        member[0].should.be.bignumber.equal(DELEGATE);
+        member[1].should.be.bignumber.equal(0); // whitelisted
+        member[2].should.equal(false); // paid
+    });
 
+    it('should request membership', async function() {
         await membership.requestMembership({from: newMember});
 
         const count = await membership.getAllMembersCount();
@@ -44,16 +65,12 @@ contract('Membership', function(accounts) {
     });
 
     it('should pay membership', async function() {
-        const newMember = accounts[2];
-
-        let price = new web3.BigNumber(web3.toWei(1, 'ether'));
-
         let startContractBalance = await web3.eth.getBalance(membership.address);
         let startMemberBalance = await web3.eth.getBalance(newMember);
 
         const txHash = await membership.payMembership({
             from: newMember,
-            value: price
+            value: membershipPrice
         });
 
         let transaction = await web3.eth.getTransaction(txHash.tx);
@@ -62,10 +79,10 @@ contract('Membership', function(accounts) {
         let newContractBalance = await web3.eth.getBalance(membership.address);
         let newMemberBalance = await web3.eth.getBalance(newMember);
 
-        newContractBalance.minus(price).should.be.bignumber.equal(startContractBalance);
+        newContractBalance.minus(membershipPrice).should.be.bignumber.equal(startContractBalance);
 
         let txFee = transaction.gasPrice.mul(receipt.gasUsed);
-        newMemberBalance.plus(price).plus(txFee).should.be.bignumber.equal(startMemberBalance);
+        newMemberBalance.plus(membershipPrice).plus(txFee).should.be.bignumber.equal(startMemberBalance);
 
         const member = await membership.getMember(newMember);
         member[0].should.be.bignumber.equal(NOT_MEMBER);
@@ -73,12 +90,11 @@ contract('Membership', function(accounts) {
         member[2].should.equal(true); // paid
     });
 
-    it('should add Whitelister from non-Delegate account', async function() {
-        const other = accounts[2];
-        const newWhitelister = accounts[3];
+    it('should add Whitelister from non-delegate account', async function() {
+        const other = newMember;
 
         try {
-            await membership.addWhitelister(newWhitelister, {
+            await membership.addWhitelister(newWhitelister1, {
                 from: other
               });
               assert.fail('should have thrown before');
@@ -87,32 +103,28 @@ contract('Membership', function(accounts) {
         }
     });
 
-    it('should add Whitelister', async function() {
-        const delegate = accounts[0];
-        const newWhitelister = accounts[3];
-
+    it('should add whitelister', async function() {
         const delegateMember = await membership.getMember(delegate);
         delegateMember[0].should.be.bignumber.equal(DELEGATE);
 
-        await membership.addWhitelister(newWhitelister, {
+        await membership.addWhitelister(newWhitelister1, {
             from: delegate
         });
 
         const count = await membership.getAllMembersCount();
         count.should.be.bignumber.equal(0);
 
-        const member = await membership.getMember(newWhitelister);
+        const member = await membership.getMember(newWhitelister1);
         member[0].should.be.bignumber.equal(WHITELISTER);
         member[1].should.be.bignumber.equal(0); // whitelisted
         member[2].should.equal(false); // paid
     });
 
-    it('should remove Whitelister from non-Delegate account', async function() {
-        const other = accounts[2];
-        const whitelister = accounts[3];
+    it('should remove whitelister from non-delegate account', async function() {
+        const other = newMember;
 
         try {
-            await membership.removeWhitelister(whitelister, {
+            await membership.removeWhitelister(newWhitelister1, {
                 from: other
               });
               assert.fail('should have thrown before');
@@ -121,9 +133,8 @@ contract('Membership', function(accounts) {
           }
     });
 
-    it('should remove non-Whitelister', async function() {
-        const delegate = accounts[0];
-        const nonWhitelister = accounts[3];
+    it('should remove whitelister that non-Whitelister', async function() {
+        const nonWhitelister = newMember;
 
         const delegateMember = await membership.getMember(delegate);
         delegateMember[0].should.be.bignumber.equal(DELEGATE);
@@ -141,7 +152,92 @@ contract('Membership', function(accounts) {
         }
     });
 
+    it('should remove whitelister', async function() {
+        const delegateMember = await membership.getMember(delegate);
+        delegateMember[0].should.be.bignumber.equal(DELEGATE);
 
+        await membership.addWhitelister(newWhitelister1, {from: delegate});
+
+        const whitelisterMember = await membership.getMember(newWhitelister1);
+        whitelisterMember[0].should.be.bignumber.equal(WHITELISTER);
+
+        await membership.removeWhitelister(newWhitelister1, {from: delegate});
+
+        const nonWhitelisterMember = await membership.getMember(newWhitelister1);
+        nonWhitelisterMember[0].should.be.bignumber.equal(NOT_MEMBER); // TODO: not equal WHITELISTER
+    });
+
+    it('should whitelist member', async function() {
+        await membership.requestMembership({from: newMember});
+
+        const delegateMember = await membership.getMember(delegate);
+        delegateMember[0].should.be.bignumber.equal(DELEGATE);
+
+        await membership.addWhitelister(newWhitelister1, {from: delegate});
+
+        await membership.whitelistMember(newMember, {from: newWhitelister1});
+
+        const member = await membership.getMember(newMember);
+        member[0].should.be.bignumber.equal(NOT_MEMBER);
+        member[1].should.be.bignumber.equal(1); // whitelisted
+
+    });
+
+    it('should conclude joining', async function() {
+        await membership.requestMembership({from: newMember});
+
+        const delegateMember = await membership.getMember(delegate);
+        delegateMember[0].should.be.bignumber.equal(DELEGATE);
+
+        await membership.addWhitelister(newWhitelister1, {from: delegate});
+        await membership.addWhitelister(newWhitelister2, {from: delegate});
+
+        await membership.whitelistMember(newMember, {from: newWhitelister1});
+        await membership.whitelistMember(newMember, {from: newWhitelister2});
+
+        await membership.payMembership({from: newMember, value: membershipPrice});
+
+        const member = await membership.getMember(newMember);
+        member[0].should.be.bignumber.equal(EXISTING_MEMBER);
+        member[1].should.be.bignumber.equal(2); // whitelisted
+        member[2].should.equal(true); // paid
+
+        const count = await membership.getAllMembersCount();
+        count.should.be.bignumber.equal(1);
+    });
+
+    it('should leave DAA (existing member)', async function() {
+        await membership.requestMembership({from: newMember});
+
+        const delegateMember = await membership.getMember(delegate);
+        delegateMember[0].should.be.bignumber.equal(DELEGATE);
+
+        await membership.addWhitelister(newWhitelister1, {from: delegate});
+        await membership.addWhitelister(newWhitelister2, {from: delegate});
+
+        await membership.whitelistMember(newMember, {from: newWhitelister1});
+        await membership.whitelistMember(newMember, {from: newWhitelister2});
+
+        await membership.payMembership({from: newMember, value: membershipPrice});
+
+        const count = await membership.getAllMembersCount();
+        count.should.be.bignumber.equal(1);
+
+        await membership.leaveDAA({from: newMember});
+
+        const countAfterLeaving = await membership.getAllMembersCount();
+        countAfterLeaving.should.be.bignumber.equal(0);
+
+        const member = await membership.getMember(newMember);
+        member[0].should.be.bignumber.equal(NOT_MEMBER);
+    });
+
+
+    it('should leave DAA (delegate)', async function() {
+        // TODO:
+        // For delegate that should only be possible when also proposing new GA date
+
+    });
 
 
 });
