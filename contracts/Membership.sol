@@ -22,6 +22,10 @@ contract Membership {
     // member => (whitelister => time)
     // mapping (address => mapping(address => uint256)) public whitelistMembers;
 
+    function Membership() {
+        members[msg.sender] = Member(MemberTypes.DELEGATE, 0, false); // TODO:
+    }
+
     function() {
         payMembership();
     }
@@ -88,6 +92,18 @@ contract Membership {
 
     function getAllMembersCount() public constant returns (uint256) {
         return allMembers;
+    }
+
+    function getMember(address addrs) public constant returns (
+        uint256,
+        uint256,
+        bool
+    ) {
+        uint256 memberType = uint256(members[addrs].memberType);
+        uint256 whitelisted = members[addrs].whitelisted;
+        bool paid = members[addrs].paid;
+
+        return (memberType, whitelisted, paid);
     }
 
     function removeMemberThatDidntPay(address addrs) internal {
