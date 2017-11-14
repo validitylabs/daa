@@ -12,7 +12,9 @@ contract ExtraordinaryGA is Proposals {
         bool annual;
     }
 
-    uint256 private constant voteTimeInDays = 14;
+    uint256 private constant VOTE_TIME_IN_DAYS = 14;
+    uint256 private constant ONE_MONTH_IN_DAYS = 30; // TODO:
+    uint256 private constant NINE_MONTHS_IN_DAYS = 274; // TODO:
 
     GA[] public generalAssemblies;
     uint256 current;
@@ -37,7 +39,7 @@ contract ExtraordinaryGA is Proposals {
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
         uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
-            "Propose General Assembly Date", 0, address(0), voteTimeInDays * 1 days);
+            "Propose General Assembly Date", 0, address(0), VOTE_TIME_IN_DAYS.mul(1 days));
         datesForVoting[proposalId] = date;
     }
 
@@ -48,8 +50,8 @@ contract ExtraordinaryGA is Proposals {
     function setAnnualAssemblyDate(uint256 date) public onlyDelegate {
         // Minimally 1 month before date of GA
         // After date of general assembly 9 months blocked
-        require(now < date - 30 * 1 days);
-        require(date > generalAssemblies[current].finished + 273 * 1 days); // TODO: 9 months
+        require(now < date.sub(ONE_MONTH_IN_DAYS.mul(1 days)));
+        require(date > generalAssemblies[current].finished.add(NINE_MONTHS_IN_DAYS.mul(1 days)));
         generalAssemblies.push(GA(date, 0, true));
     }
 
@@ -69,7 +71,7 @@ contract ExtraordinaryGA is Proposals {
         // ⅕ of all members have to vote yes
         // for * 5 >= (all members) * 1
         Proposal storage proposal = proposals[GENERAL_ASSEMBLY][proposalId];
-        bool res = proposal.votesFor * uint(5) >= getAllMembersCount();
+        bool res = proposal.votesFor.mul(uint(5)) >= getAllMembersCount();
 
         proposal.result = res;
         if (res) {

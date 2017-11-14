@@ -6,11 +6,11 @@ import './Proposals.sol';
 
 contract DelegateCandidacy is Proposals {
 
-    uint256 private constant voteTimeInMins = 10;
+    uint256 private constant VOTE_TIME_IN_MINS = 10;
 
     function proposeDelegateCandidacy() public onlyMember {
         super.submitProposal(DELEGATE_CANDIDACY, "Propose Delegate Candidacy",
-            0, address(0), voteTimeInMins * 1 minutes);
+            0, address(0), VOTE_TIME_IN_MINS.mul(1 minutes));
     }
 
     function voteForDelegate(uint256 proposalId, bool favor) public onlyMember {

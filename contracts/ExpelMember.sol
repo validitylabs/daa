@@ -26,8 +26,8 @@ contract ExpelMember is Proposals {
         // for * 3 >= (for + against) * 2
         Proposal storage proposal = proposals[EXPEL_MEMBER][proposalId];
         uint256 allVoted = proposal.votesFor.add(proposal.votesAgainst);
-        bool res = proposal.votesFor * uint(3) >= allVoted * uint(2) &&
-            allVoted * uint(10) >= getAllMembersCount();
+        bool res = proposal.votesFor.mul(uint(3)) >= allVoted.mul(uint(2)) &&
+            allVoted.mul(uint(10)) >= getAllMembersCount();
 
         proposal.result = res;
         if (res) {
