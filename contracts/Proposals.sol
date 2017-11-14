@@ -32,6 +32,8 @@ contract Proposals is Membership {
         bool result;
     }
 
+    // event ProposalAdded(uint256 proposalType, uint256 id);
+
     uint256 private constant VOTE_TIME_IN_DAYS = 60;
 
     mapping(uint256 => Proposal[]) proposals;
@@ -65,7 +67,9 @@ contract Proposals is Membership {
             false
             )
         );
-        return proposals[proposalType].length.sub(1);
+        uint256 id = proposals[proposalType].length.sub(1);
+        // ProposalAdded(proposalType, id);
+        return id;
     }
 
     function extendProposalDuration(uint256 proposalType, uint256 proposalId, uint256 time) internal onlyMember {
@@ -80,7 +84,7 @@ contract Proposals is Membership {
         Proposal storage proposal = proposals[proposalType][proposalId];
         require(!proposal.voted[msg.sender]);
 
-        if (proposal.startTime.add(proposal.duration) < now) {
+        if (now < proposal.startTime.add(proposal.duration)) {
             proposal.voted[msg.sender] = true;
             if (favor) {
                 proposal.votesFor = proposal.votesFor.add(1);
