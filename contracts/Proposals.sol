@@ -34,7 +34,7 @@ contract Proposals is Membership {
 
     // event ProposalAdded(uint256 proposalType, uint256 id);
 
-    uint256 private constant VOTE_TIME_IN_DAYS = 60;
+    uint256 private constant voteTime = 60 days;
 
     mapping(uint256 => Proposal[]) proposals;
 
@@ -52,7 +52,7 @@ contract Proposals is Membership {
         returns (uint256)
     {
         require(// duration >= 1 weeks && // TODO: can be 10 mins for Update Organization
-            duration <= VOTE_TIME_IN_DAYS.mul(1 days));
+            duration <= voteTime);
 
         proposals[proposalType].push(Proposal(
             msg.sender,
@@ -75,7 +75,7 @@ contract Proposals is Membership {
     function extendProposalDuration(uint256 proposalType, uint256 proposalId, uint256 time) internal onlyMember {
         Proposal storage proposal = proposals[proposalType][proposalId];
         require(proposal.submitter == msg.sender);
-        require(proposal.duration.add(time) <= VOTE_TIME_IN_DAYS.mul(1 days));
+        require(proposal.duration.add(time) <= voteTime);
 
         proposal.duration = proposal.duration.add(time);
     }

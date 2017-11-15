@@ -6,10 +6,10 @@ import './ExtraordinaryGA.sol';
 
 contract Dissolution is ExtraordinaryGA {
 
-    uint256 private constant VOTE_TIME_IN_MINS = 10;
+    uint256 private constant voteTime = 10 minutes;
 
     function proposeDissolution() public onlyMember onlyDuringGA {
-        super.submitProposal(DISSOLUTION, "Dissolution", 0, address(0), VOTE_TIME_IN_MINS.mul(1 minutes));
+        super.submitProposal(DISSOLUTION, "Dissolution", 0, address(0), voteTime);
     }
 
     function voteForDissolution(uint256 proposalId, bool favor) public onlyMember onlyDuringGA {

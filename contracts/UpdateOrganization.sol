@@ -6,12 +6,12 @@ import './ExtraordinaryGA.sol';
 
 contract UpdateOrganization is ExtraordinaryGA {
 
-    uint256 private constant VOTE_TIME_IN_MINS = 10;
+    uint256 private constant voteTime = 10 minutes;
 
     // TODO: args
     function proposeUpdate() public onlyMember onlyDuringGA {
         super.submitProposal(UPDATE_ORGANIZATION, "Update Organization", 0,
-            address(0), VOTE_TIME_IN_MINS.mul(1 minutes));
+            address(0), voteTime);
     }
 
     function voteForUpdate(uint256 proposalId, bool favor) public onlyMember onlyDuringGA {

@@ -6,11 +6,10 @@ import './ExtraordinaryGA.sol';
 
 contract ChangeStatutes is ExtraordinaryGA {
 
-    uint256 private constant VOTE_TIME_IN_MINS = 10;
+    uint256 private constant voteTime = 10 minutes;
 
     function setHashOfStatutes(bytes32 hashOfStatutes) public onlyMember onlyDuringGA {
-        super.submitProposal(CHANGE_STATUTES, hashOfStatutes, 0, address(0),
-            VOTE_TIME_IN_MINS.mul(1 minutes));
+        super.submitProposal(CHANGE_STATUTES, hashOfStatutes, 0, address(0), voteTime);
     }
 
     function voteForChangeStatutes(uint256 proposalId, bool favor) public onlyMember onlyDuringGA {

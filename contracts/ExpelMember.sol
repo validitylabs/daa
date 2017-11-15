@@ -6,10 +6,13 @@ import './Proposals.sol';
 
 contract ExpelMember is Proposals {
 
+    uint256 private constant voteTime = 1 weeks;
+
     mapping (uint256 => address) membersToExpel;
 
     function proposeExpelMember(address member) public onlyMember {
-        uint256 proposalId = super.submitProposal(EXPEL_MEMBER, "Expel Member", 0, address(0), 1 weeks);
+        uint256 proposalId = super.submitProposal(EXPEL_MEMBER, "Expel Member", 0,
+            address(0), voteTime);
         membersToExpel[proposalId] = member;
     }
 
