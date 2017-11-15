@@ -14,7 +14,7 @@ function toAscii(hexString) {
 
 const SimpleProposals = artifacts.require('SimpleProposals.sol');
 
-contract('Proposals', function(accounts) {
+contract('SimpleProposals', function(accounts) {
 
     let simpleProposals;
 
@@ -26,8 +26,8 @@ contract('Proposals', function(accounts) {
     const name = "test";
     const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     const destinationAddress = accounts[5];
-    const duration = 600000; // 10 mins in milliseconds
-    const extendedDuration = 120000; // 2 mins in milliseconds
+    const duration = 600; // 10 mins in seconds
+    const extendedDuration = 120; // 2 mins in seconds
 
     const nonMember = accounts[6];
 
@@ -101,24 +101,60 @@ contract('Proposals', function(accounts) {
     });
 
     it('should extend proposal duration from non-member account', async function() {
-        // TODO:
+        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+            from: newMember
+        });
 
+        try {
+            await simpleProposals.extendProposalDuration(0, extendedDuration, {
+                from: nonMember
+            });
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
     });
 
-    it('should extend proposal duration from non-submitter account', async function() {
-        // TODO:
+    it('should extend proposal duration from non-submitter (existing member) account', async function() {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+            from: newMember
+        });
 
+        // TODO: whitelister is existing member ?
+        try {
+            await simpleProposals.extendProposalDuration(0, extendedDuration, {
+                from: newWhitelister1
+            });
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
     });
 
     it('should extend proposal duration for more than 60 days', async function() {
-        // TODO:
+        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+            from: newMember
+        });
 
+        const extendedDuration2 = 5270400; // 61 days in seconds
+
+        try {
+            await simpleProposals.extendProposalDuration(0, extendedDuration2, {
+                from: newMember
+            });
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
     });
 
     it('should vote for proposal', async function() {
         await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
             from: newMember
         });
+
+        // TODO:
+        // can delegate, whitelister, submitter vote?
 
         await simpleProposals.voteForProposal(0, true, {from: newMember});
 
@@ -128,14 +164,38 @@ contract('Proposals', function(accounts) {
         proposal[7].should.be.bignumber.equal(0); // votesAgainst
 
         // proposal[8].should.equal(false); // concluded
-
-
-        // TODO:
-        // can delegate, whitelister, submitter vote?
-
     });
 
     it('should vote for proposal from non-member account', async function() {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+            from: newMember
+        });
+
+        try {
+            await simpleProposals.voteForProposal(0, true, {from: nonMember});
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
+    });
+
+    it('should vote twice from one account', async function() {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+            from: newMember
+        });
+
+        await simpleProposals.voteForProposal(0, true, {from: newMember});
+
+        try {
+            await simpleProposals.voteForProposal(0, true, {from: newMember});
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
+    });
+
+
+    it('should conclude proposal', async function() {
         // TODO:
 
     });
