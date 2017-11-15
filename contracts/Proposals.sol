@@ -9,14 +9,14 @@ contract Proposals is Membership {
     // enum ProposalType {SIMPLE_PROPOSAL, EXPEL_MEMBER, DELEGATE_CANDIDACY, DISCHARGE,
     //    GENERAL_ASSEMBLY, DISSOLUTION, CHANGE_STATUTES, UPDATE_ORGANIZATION}
 
-    uint constant SIMPLE_PROPOSAL = 0;
-    uint constant EXPEL_MEMBER = 1;
-    uint constant DELEGATE_CANDIDACY = 2;
-    uint constant DISCHARGE = 3;
-    uint constant GENERAL_ASSEMBLY = 4;
-    uint constant DISSOLUTION = 5;
-    uint constant CHANGE_STATUTES = 6;
-    uint constant UPDATE_ORGANIZATION = 7;
+    uint256 constant SIMPLE_PROPOSAL = 0;
+    uint256 constant EXPEL_MEMBER = 1;
+    uint256 constant DELEGATE_CANDIDACY = 2;
+    uint256 constant DISCHARGE = 3;
+    uint256 constant GENERAL_ASSEMBLY = 4;
+    uint256 constant DISSOLUTION = 5;
+    uint256 constant CHANGE_STATUTES = 6;
+    uint256 constant UPDATE_ORGANIZATION = 7;
 
     struct Proposal {
         address submitter;

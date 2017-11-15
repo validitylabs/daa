@@ -71,7 +71,7 @@ contract ExtraordinaryGA is Proposals {
         // ⅕ of all members have to vote yes
         // for * 5 >= (all members) * 1
         Proposal storage proposal = proposals[GENERAL_ASSEMBLY][proposalId];
-        bool res = proposal.votesFor.mul(uint(5)) >= getAllMembersCount();
+        bool res = proposal.votesFor.mul(uint256(5)) >= getAllMembersCount();
 
         proposal.result = res;
         if (res) {

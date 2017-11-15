@@ -24,8 +24,8 @@ contract ChangeStatutes is ExtraordinaryGA {
         // ⅔ have to vote “yes”
         // for * 3 >= (for + against) * 2
         Proposal storage proposal = proposals[CHANGE_STATUTES][proposalId];
-        proposal.result = proposal.votesFor.mul(uint(3)) >=
-            proposal.votesFor.add(proposal.votesAgainst).mul(uint(2));
+        proposal.result = proposal.votesFor.mul(uint256(3)) >=
+            proposal.votesFor.add(proposal.votesAgainst).mul(uint256(2));
     }
 
 }
