@@ -1,4 +1,7 @@
-'use strict';
+import {advanceBlock} from './helpers/advanceToBlock'
+import {increaseTimeTo, duration} from './helpers/increaseTime';
+import latestTime from './helpers/latestTime';
+
 const assertJump = require('zeppelin-solidity/test/helpers/assertJump');
 
 const BigNumber = web3.BigNumber;
@@ -26,10 +29,14 @@ contract('SimpleProposals', function(accounts) {
     const name = "test";
     const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     const destinationAddress = accounts[5];
-    const duration = 600; // 10 mins in seconds
-    const extendedDuration = 120; // 2 mins in seconds
-
+    const prDuration = duration.days(10);
+    const extendedDuration = duration.days(1);
     const nonMember = accounts[6];
+
+    before(async function() {
+        //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc
+        await advanceBlock();
+    });
 
     beforeEach(async function() {
         simpleProposals = await SimpleProposals.new();
@@ -49,7 +56,7 @@ contract('SimpleProposals', function(accounts) {
         /*
         const {
           logs
-        } = await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        } = await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
         const event = logs.find(e => e.event === 'ProposalAdded');
@@ -59,17 +66,17 @@ contract('SimpleProposals', function(accounts) {
         event.args.id.should.be.bignumber.equal(0);
         */
 
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
-        const proposal = await simpleProposals.getProposal(0);
+        const proposal = await simpleProposals.getSimpleProposal(0);
         proposal[0].should.equal(newMember); // submitter
         toAscii(proposal[1]).should.equal(name); // name
         proposal[2].should.be.bignumber.equal(amount); // amount
         proposal[3].should.equal(destinationAddress); // destinationAddress
         // proposal[4].should.be.bignumber.equal(startTime); // TODO: startTime
-        proposal[5].should.be.bignumber.equal(duration); // duration
+        proposal[5].should.be.bignumber.equal(prDuration); // duration
         proposal[6].should.be.bignumber.equal(0); // votesFor
         proposal[7].should.be.bignumber.equal(0); // votesAgainst
         proposal[8].should.equal(false); // concluded
@@ -78,7 +85,7 @@ contract('SimpleProposals', function(accounts) {
 
     it('should submit proposal from non-member account', async function() {
         try {
-            await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+            await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
                 from: nonMember
             });
             assert.fail('should have thrown before');
@@ -88,7 +95,7 @@ contract('SimpleProposals', function(accounts) {
     });
 
     it('should extend proposal duration', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -96,12 +103,12 @@ contract('SimpleProposals', function(accounts) {
             from: newMember
         });
 
-        const proposal = await simpleProposals.getProposal(0);
-        proposal[5].minus(extendedDuration).should.be.bignumber.equal(duration);
+        const proposal = await simpleProposals.getSimpleProposal(0);
+        proposal[5].minus(extendedDuration).should.be.bignumber.equal(prDuration);
     });
 
     it('should extend proposal duration from non-member account', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -116,7 +123,7 @@ contract('SimpleProposals', function(accounts) {
     });
 
     it('should extend proposal duration from non-submitter (existing member) account', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -132,7 +139,7 @@ contract('SimpleProposals', function(accounts) {
     });
 
     it('should extend proposal duration for more than 60 days', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -149,7 +156,7 @@ contract('SimpleProposals', function(accounts) {
     });
 
     it('should vote for proposal', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -158,7 +165,7 @@ contract('SimpleProposals', function(accounts) {
 
         await simpleProposals.voteForProposal(0, true, {from: newMember});
 
-        const proposal = await simpleProposals.getProposal(0);
+        const proposal = await simpleProposals.getSimpleProposal(0);
 
         proposal[6].should.be.bignumber.equal(1); // votesFor
         proposal[7].should.be.bignumber.equal(0); // votesAgainst
@@ -167,7 +174,7 @@ contract('SimpleProposals', function(accounts) {
     });
 
     it('should vote for proposal from non-member account', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -180,7 +187,7 @@ contract('SimpleProposals', function(accounts) {
     });
 
     it('should vote twice from one account', async function() {
-        await simpleProposals.submitProposal(name, amount, destinationAddress, duration, {
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
             from: newMember
         });
 
@@ -194,9 +201,25 @@ contract('SimpleProposals', function(accounts) {
         }
     });
 
-
     it('should conclude proposal', async function() {
-        // TODO:
+        await simpleProposals.submitProposal(name, amount, destinationAddress, prDuration, {
+            from: newMember
+        });
+        await simpleProposals.voteForProposal(0, true, {from: newMember});
+
+        // sleep.sleep(duration);
+        const endTime =   latestTime() + prDuration;
+        const afterEndTime = endTime + duration.seconds(1);
+
+        await increaseTimeTo(afterEndTime);
+
+        // after the voting time has expired
+        await simpleProposals.voteForProposal(0, true, {from: newWhitelister1});
+
+        const proposal = await simpleProposals.getSimpleProposal(0);
+
+        proposal[8].should.equal(true); // concluded
+        proposal[9].should.equal(true); // result
 
     });
 

@@ -21,6 +21,10 @@ contract ExtraordinaryGA is Proposals {
 
     mapping (uint256 => uint256) datesForVoting;
 
+    function ExtraordinaryGA() {
+        current = 0;
+        generalAssemblies.push(GA(0, 0, false));
+    }
 
     // TODO:
     modifier onlyDuringGA() {
@@ -37,7 +41,41 @@ contract ExtraordinaryGA is Proposals {
         _;
     }
 
+    // Proposal has to be readable by external SC
+    function getGADateProposal(uint256 proposalId) external constant returns (
+        address submitter,
+        bytes32 name,
+        uint256 amount,
+        address destinationAddress,
+        uint256 startTime,
+        uint256 duration,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        bool concluded,
+        bool result
+    )
+    {
+        return getProposal(GENERAL_ASSEMBLY, proposalId);
+    }
+
+    function getDateForVoting(uint256 proposalId) public constant returns (uint256) {
+        return datesForVoting[proposalId];
+    }
+
+    function getLatestAddedGA() public constant returns (
+        uint256,
+        uint256,
+        bool
+    )
+    {
+        GA storage latestAddedGA = generalAssemblies[generalAssemblies.length - 1];
+        return (latestAddedGA.date, latestAddedGA.finished, latestAddedGA.annual);
+    }
+
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
+        // TODO:
+        // require(now < date.sub(ONE_MONTH));
+
         uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
             "Propose General Assembly Date", 0, address(0), voteTime);
         datesForVoting[proposalId] = date;
@@ -52,7 +90,18 @@ contract ExtraordinaryGA is Proposals {
         // After date of general assembly 9 months blocked
         require(now < date.sub(ONE_MONTH));
         require(date > generalAssemblies[current].finished.add(NINE_MONTHS));
+
         generalAssemblies.push(GA(date, 0, true));
+        current = generalAssemblies.length - 1;
+    }
+
+    function finishCurrentGeneralAssembly() public onlyDelegate {
+        require(current < generalAssemblies.length);
+
+        GA storage ga = generalAssemblies[current];
+        require(ga.finished == 0);
+        require(now > ga.date);
+        ga.finished = now;
     }
 
     function stepDownAndProposeGA(uint256 date) public onlyDelegate {
@@ -77,6 +126,7 @@ contract ExtraordinaryGA is Proposals {
         if (res) {
             uint256 date = datesForVoting[proposalId];
             generalAssemblies.push(GA(date, 0, false));
+            current = generalAssemblies.length - 1;
         }
     }
 

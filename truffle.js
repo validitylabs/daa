@@ -1,3 +1,7 @@
+// https://ethereum.stackexchange.com/a/21409
+require('babel-register');
+require('babel-polyfill');
+
 module.exports = {
   networks: {
     development: {

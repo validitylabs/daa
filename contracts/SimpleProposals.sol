@@ -7,7 +7,7 @@ import './Proposals.sol';
 contract SimpleProposals is Proposals {
 
     // Proposal has to be readable by external SC
-    function getProposal(uint256 proposalId) external constant returns (
+    function getSimpleProposal(uint256 proposalId) external constant returns (
         address submitter,
         bytes32 name,
         uint256 amount,
