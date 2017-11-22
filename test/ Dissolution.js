@@ -11,11 +11,11 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const UpdateOrganization = artifacts.require('UpdateOrganization.sol');
+const Dissolution = artifacts.require('Dissolution.sol');
 
-contract('UpdateOrganization', function(accounts) {
+contract('Dissolution', function(accounts) {
 
-    let updateOrganization;
+    let dissolution;
     let gaDate;
 
     const delegate = accounts[0];
@@ -31,7 +31,7 @@ contract('UpdateOrganization', function(accounts) {
 
     // const nonMember = accounts[6];
 
-    const newDAO = accounts[7];
+    const beneficiary = accounts[7];
 
 
     before(async function() {
@@ -40,22 +40,22 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     beforeEach(async function() {
-        updateOrganization = await UpdateOrganization.new();
+        dissolution = await Dissolution.new();
 
-        await updateOrganization.requestMembership({from: newMember});
+        await dissolution.requestMembership({from: newMember});
 
-        await updateOrganization.addWhitelister(newWhitelister1, {from: delegate});
-        await updateOrganization.addWhitelister(newWhitelister2, {from: delegate});
+        await dissolution.addWhitelister(newWhitelister1, {from: delegate});
+        await dissolution.addWhitelister(newWhitelister2, {from: delegate});
 
-        await updateOrganization.whitelistMember(newMember, {from: newWhitelister1});
-        await updateOrganization.whitelistMember(newMember, {from: newWhitelister2});
+        await dissolution.whitelistMember(newMember, {from: newWhitelister1});
+        await dissolution.whitelistMember(newMember, {from: newWhitelister2});
 
-        await updateOrganization.payMembership({from: newMember, value: amount});
+        await dissolution.payMembership({from: newMember, value: amount});
 
 
         gaDate = latestTime() + duration.weeks(10);
-        await updateOrganization.proposeGeneralAssemblyDate(gaDate, {from: newMember});
-        await updateOrganization.voteForGeneralAssemblyDate(0, true, {from: newMember});
+        await dissolution.proposeGeneralAssemblyDate(gaDate, {from: newMember});
+        await dissolution.voteForGeneralAssemblyDate(0, true, {from: newMember});
 
         const endTime =   latestTime() + prGADuration;
         const afterEndTime = endTime + duration.seconds(1);
@@ -63,14 +63,14 @@ contract('UpdateOrganization', function(accounts) {
         await increaseTimeTo(afterEndTime);
 
         // after the voting time has expired => concludeGeneralAssemblyVote
-        await updateOrganization.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
+        await dissolution.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
 
 
-        // const proposal = await updateOrganization.getGADateProposal(0);
+        // const proposal = await dissolution.getGADateProposal(0);
         // proposal[8].should.equal(true); // concluded
         // proposal[9].should.equal(true); // result
 
-        // const ga = await updateOrganization.getCurrentGA();
+        // const ga = await dissolution.getCurrentGA();
         // console.log(ga[0].toString());
         // console.log(ga[1].toString());
         // console.log(ga[2]);
@@ -80,36 +80,36 @@ contract('UpdateOrganization', function(accounts) {
         // const finishGADate = gaDate + duration.days(10);
         // await increaseTimeTo(finishGADate);
 
-        // await updateOrganization.finishCurrentGeneralAssembly({from: delegate});
+        // await dissolution.finishCurrentGeneralAssembly({from: delegate});
 
     });
 
-    it('should propose Update Organization', async function() {
+    it('should propose Dissolution', async function() {
         await increaseTimeTo(gaDate);
 
-        await updateOrganization.proposeUpdate(newDAO, {from: newMember});
-        const proposal = await updateOrganization.getUpdOrganizationProposal(0);
+        await dissolution.proposeDissolution(beneficiary, {from: newMember});
+        const proposal = await dissolution.getDissolutionProposal(0);
         proposal[0].should.equal(newMember); // submitter
 
-        proposal[3].should.equal(newDAO); // destinationAddress
+        proposal[3].should.equal(beneficiary); // destinationAddress
     });
 
-    it('should propose Update Organization (empty DAO account)', async function() {
+    it('should propose Dissolution (empty beneficiary account)', async function() {
         await increaseTimeTo(gaDate);
 
         try {
-            await updateOrganization.proposeUpdate(0x0, {from: newMember});
+            await dissolution.proposeDissolution(0x0, {from: newMember});
             assert.fail('should have thrown before');
         } catch (error) {
             assertJump(error);
         }
     });
 
-    it('should propose Update Organization (not during GA)', async function() {
+    it('should propose Dissolution (not during GA)', async function() {
         // await increaseTimeTo(gaDate);
 
         try {
-            await updateOrganization.proposeUpdate(newDAO, {from: newMember});
+            await dissolution.proposeDissolution(beneficiary, {from: newMember});
             assert.fail('should have thrown before');
         } catch (error) {
             assertJump(error);
@@ -117,14 +117,14 @@ contract('UpdateOrganization', function(accounts) {
     });
 
 
-    it('should vote for Update Organization', async function() {
+    it('should vote for Dissolution', async function() {
         await increaseTimeTo(gaDate);
 
-        await updateOrganization.proposeUpdate(newDAO, {from: newMember});
+        await dissolution.proposeDissolution(beneficiary, {from: newMember});
 
-        await updateOrganization.voteForUpdate(0, true, {from: newMember});
+        await dissolution.voteForDissolution(0, true, {from: newMember});
 
-        const proposal = await updateOrganization.getUpdOrganizationProposal(0);
+        const proposal = await dissolution.getDissolutionProposal(0);
 
         proposal[6].should.be.bignumber.equal(1); // votesFor
         proposal[7].should.be.bignumber.equal(0); // votesAgainst
@@ -132,15 +132,15 @@ contract('UpdateOrganization', function(accounts) {
         // proposal[8].should.equal(false); // concluded
     });
 
-    it('should conclude vote for Update Organization', async function() {
+    it('should conclude vote for Dissolution', async function() {
         await increaseTimeTo(gaDate);
 
-        const startContractBalance = await web3.eth.getBalance(updateOrganization.address);
-        const startNewDAOBalance = await web3.eth.getBalance(newDAO);
+        const startContractBalance = await web3.eth.getBalance(dissolution.address);
+        const startBeneficiaryBalance = await web3.eth.getBalance(beneficiary);
 
 
-        await updateOrganization.proposeUpdate(newDAO, {from: newMember});
-        await updateOrganization.voteForUpdate(0, true, {from: newMember});
+        await dissolution.proposeDissolution(beneficiary, {from: newMember});
+        await dissolution.voteForDissolution(0, true, {from: newMember});
 
         const endTime =   latestTime() + duration.minutes(10); // voteTime = 10 minutes;
         const afterEndTime = endTime + duration.seconds(1);
@@ -148,22 +148,22 @@ contract('UpdateOrganization', function(accounts) {
         await increaseTimeTo(afterEndTime);
 
         // after the voting time has expired => concludeGeneralAssemblyVote
-        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister1});
+        await dissolution.voteForDissolution(0, true, {from: newWhitelister1});
 
-        // const proposal = await updateOrganization.getUpdOrganizationProposal(0);
+        // const proposal = await dissolution.getDissolutionProposal(0);
 
         // proposal[8].should.equal(true); // concluded
         // proposal[9].should.equal(true); // result
 
-        const member = await updateOrganization.getMember(delegate);
+        const member = await dissolution.getMember(delegate);
         member[0].should.be.bignumber.equal(0); // DELEGATE = 2;
 
 
-        const newContractBalance = await web3.eth.getBalance(updateOrganization.address);
-        const newNewDAOBalance = await web3.eth.getBalance(newDAO);
+        const newContractBalance = await web3.eth.getBalance(dissolution.address);
+        const newBeneficiaryBalance = await web3.eth.getBalance(beneficiary);
 
         newContractBalance.should.be.bignumber.equal(0);
-        startNewDAOBalance.plus(startContractBalance).should.be.bignumber.equal(newNewDAOBalance);
+        startBeneficiaryBalance.plus(startContractBalance).should.be.bignumber.equal(newBeneficiaryBalance);
     });
 
 });

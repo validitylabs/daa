@@ -57,9 +57,7 @@ contract('ExtraordinaryGA', function(accounts) {
     });
 
     it('should propose General Assembly date', async function() {
-        await extraordinaryGA.proposeGeneralAssemblyDate(date, {
-            from: newMember
-        });
+        await extraordinaryGA.proposeGeneralAssemblyDate(date, {from: newMember});
 
         const proposal = await extraordinaryGA.getGADateProposal(0);
         proposal[0].should.equal(newMember); // submitter
@@ -69,9 +67,7 @@ contract('ExtraordinaryGA', function(accounts) {
     });
 
     it('should vote for General Assembly date', async function() {
-        await extraordinaryGA.proposeGeneralAssemblyDate(date, {
-            from: newMember
-        });
+        await extraordinaryGA.proposeGeneralAssemblyDate(date, {from: newMember});
 
         await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newMember});
 
@@ -85,18 +81,15 @@ contract('ExtraordinaryGA', function(accounts) {
 
 
     it('should conclude General Assembly vote', async function() {
-        await extraordinaryGA.proposeGeneralAssemblyDate(date, {
-            from: newMember
-        });
+        await extraordinaryGA.proposeGeneralAssemblyDate(date, {from: newMember});
         await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newMember});
 
-        // sleep.sleep(duration);
         const endTime =   latestTime() + prDuration;
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired
+        // after the voting time has expired => concludeGeneralAssemblyVote
         await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
 
         const proposal = await extraordinaryGA.getGADateProposal(0);
@@ -112,9 +105,7 @@ contract('ExtraordinaryGA', function(accounts) {
 
 
     it('should set Annual Assembly date', async function() {
-        await extraordinaryGA.setAnnualAssemblyDate(date, {
-            from: delegate
-        });
+        await extraordinaryGA.setAnnualAssemblyDate(date, {from: delegate});
 
         const latestAddedGA = await extraordinaryGA.getLatestAddedGA();
         latestAddedGA[0].should.be.bignumber.equal(date);
@@ -124,9 +115,7 @@ contract('ExtraordinaryGA', function(accounts) {
 
     it('should set Annual Assembly date from non-delegate', async function() {
         try {
-            await extraordinaryGA.setAnnualAssemblyDate(date, {
-                from: newMember
-            });
+            await extraordinaryGA.setAnnualAssemblyDate(date, {from: newMember});
             assert.fail('should have thrown before');
         } catch (error) {
             assertJump(error);
@@ -136,9 +125,7 @@ contract('ExtraordinaryGA', function(accounts) {
     it('should set Annual Assembly date (less than 1 month before date of GA)', async function() {
         date = latestTime() + duration.weeks(1);
         try {
-            await extraordinaryGA.setAnnualAssemblyDate(date, {
-                from: delegate
-            });
+            await extraordinaryGA.setAnnualAssemblyDate(date, {from: delegate});
             assert.fail('should have thrown before');
         } catch (error) {
             assertJump(error);
@@ -146,18 +133,15 @@ contract('ExtraordinaryGA', function(accounts) {
     });
 
     it('should set Annual Assembly date (before date of general assembly 9 months blocked)', async function() {
-        await extraordinaryGA.proposeGeneralAssemblyDate(date, {
-            from: newMember
-        });
+        await extraordinaryGA.proposeGeneralAssemblyDate(date, {from: newMember});
         await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newMember});
 
-        // sleep.sleep(duration);
         const endTime =   latestTime() + prDuration;
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired
+        // after the voting time has expired => concludeGeneralAssemblyVote
         await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
 
 
@@ -177,8 +161,6 @@ contract('ExtraordinaryGA', function(accounts) {
             assertJump(error);
         }
     });
-
-
 
 
 });
