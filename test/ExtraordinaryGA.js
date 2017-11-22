@@ -11,10 +11,6 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-function toAscii(hexString) {
-    return web3.toAscii(hexString).replace(/\0/g, '');
-}
-
 const ExtraordinaryGA = artifacts.require('ExtraordinaryGA.sol');
 
 contract('ExtraordinaryGA', function(accounts) {
@@ -27,13 +23,13 @@ contract('ExtraordinaryGA', function(accounts) {
     const newWhitelister1 = accounts[3];
     const newWhitelister2 = accounts[4];
 
-    const name = "test";
+    // const name = "test";
     const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
-    const destinationAddress = accounts[5];
+    // const destinationAddress = accounts[5];
     const prDuration = duration.days(14);
-    const extendedDuration = 120; // 2 mins in seconds
+    // const extendedDuration = 120; // 2 mins in seconds
 
-    const nonMember = accounts[6];
+    // const nonMember = accounts[6];
 
     before(async function() {
         //Advance to the next block to correctly read time in the solidity "now" function interpreted by testrpc

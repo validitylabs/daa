@@ -10,7 +10,31 @@ contract ExpelMember is Proposals {
 
     mapping (uint256 => address) membersToExpel;
 
+    // Proposal has to be readable by external SC
+    function getExpelMemberProposal(uint256 proposalId) external constant returns (
+        address submitter,
+        bytes32 name,
+        uint256 amount,
+        address destinationAddress,
+        uint256 startTime,
+        uint256 duration,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        bool concluded,
+        bool result
+    )
+    {
+        return getProposal(EXPEL_MEMBER, proposalId);
+    }
+
+    // TODO: membersToExpel as public?
+    function getMemberToExpel(uint256 proposalId) public constant returns (address) {
+        return membersToExpel[proposalId];
+    }
+
     function proposeExpelMember(address member) public onlyMember {
+        require(member != address(0));
+
         uint256 proposalId = super.submitProposal(EXPEL_MEMBER, "Expel Member", 0,
             address(0), voteTime);
         membersToExpel[proposalId] = member;
@@ -23,6 +47,7 @@ contract ExpelMember is Proposals {
     function concludeProposal(uint256 proposalId) internal {
         concludeExpel(proposalId);
     }
+
 
     function concludeExpel(uint256 proposalId) private {
         // ⅔ have to vote “yes”

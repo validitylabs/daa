@@ -86,6 +86,7 @@ contract Proposals is Membership {
 
     function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor) internal onlyMember {
         Proposal storage proposal = proposals[proposalType][proposalId];
+        require(!proposal.concluded);
         require(!proposal.voted[msg.sender]);
 
         if (now < proposal.startTime.add(proposal.duration)) {
