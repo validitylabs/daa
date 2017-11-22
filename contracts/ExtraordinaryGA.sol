@@ -58,6 +58,7 @@ contract ExtraordinaryGA is Proposals {
         return getProposal(GENERAL_ASSEMBLY, proposalId);
     }
 
+    // TODO: datesForVoting as public?
     function getDateForVoting(uint256 proposalId) public constant returns (uint256) {
         return datesForVoting[proposalId];
     }
@@ -72,9 +73,19 @@ contract ExtraordinaryGA is Proposals {
         return (latestAddedGA.date, latestAddedGA.finished, latestAddedGA.annual);
     }
 
+    function getCurrentGA() public constant returns (
+        uint256,
+        uint256,
+        bool
+    )
+    {
+        GA storage currentGA = generalAssemblies[current];
+        return (currentGA.date, currentGA.finished, currentGA.annual);
+    }
+
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
-        // TODO:
-        // require(now < date.sub(ONE_MONTH));
+        // TODO: has to be in the future by at least one voting duration
+        require(date > now);
 
         uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
             "Propose General Assembly Date", 0, address(0), voteTime);
@@ -116,7 +127,9 @@ contract ExtraordinaryGA is Proposals {
         concludeGeneralAssemblyVote(proposalId);
     }
 
-    function concludeGeneralAssemblyVote(uint256 proposalId) private {
+    function concludeGeneralAssemblyVote(uint256 proposalId) internal {
+        require(proposalId < proposals[GENERAL_ASSEMBLY].length);
+
         // ⅕ of all members have to vote yes
         // for * 5 >= (all members) * 1
         Proposal storage proposal = proposals[GENERAL_ASSEMBLY][proposalId];
@@ -128,6 +141,7 @@ contract ExtraordinaryGA is Proposals {
             generalAssemblies.push(GA(date, 0, false));
             current = generalAssemblies.length - 1;
         }
+
     }
 
 }

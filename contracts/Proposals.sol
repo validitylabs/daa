@@ -38,8 +38,6 @@ contract Proposals is Membership {
 
     mapping(uint256 => Proposal[]) proposals;
 
-    function concludeProposal(uint256 proposalId) internal;
-
     function submitProposal(
         uint256 proposalType,
         bytes32 name,
@@ -80,6 +78,12 @@ contract Proposals is Membership {
         proposal.duration = proposal.duration.add(time);
     }
 
+    function concludeProposal(uint256 proposalId) internal;
+
+    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
+        concludeProposal(proposalId);
+    }
+
     function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor) internal onlyMember {
         Proposal storage proposal = proposals[proposalType][proposalId];
         require(!proposal.voted[msg.sender]);
@@ -93,7 +97,7 @@ contract Proposals is Membership {
             }
         } else {
             proposal.concluded = true;
-            concludeProposal(proposalId);
+            concludeProposal(proposalType, proposalId);
         }
     }
 

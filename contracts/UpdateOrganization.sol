@@ -8,26 +8,54 @@ contract UpdateOrganization is ExtraordinaryGA {
 
     uint256 private constant voteTime = 10 minutes;
 
-    // TODO: args
-    function proposeUpdate() public onlyMember onlyDuringGA {
+    // Proposal has to be readable by external SC
+    function getUpdOrganizationProposal(uint256 proposalId) external constant returns (
+        address submitter,
+        bytes32 name,
+        uint256 amount,
+        address destinationAddress,
+        uint256 startTime,
+        uint256 duration,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        bool concluded,
+        bool result
+    )
+    {
+        return getProposal(UPDATE_ORGANIZATION, proposalId);
+    }
+
+    function proposeUpdate(address newDAO) public onlyMember onlyDuringGA {
+        require(newDAO != address(0));
         super.submitProposal(UPDATE_ORGANIZATION, "Update Organization", 0,
-            address(0), voteTime);
+            newDAO, voteTime);
     }
 
     function voteForUpdate(uint256 proposalId, bool favor) public onlyMember onlyDuringGA {
         super.voteForProposal(UPDATE_ORGANIZATION, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalId) internal {
-        concludeVoteForUpdate(proposalId);
+    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
+        if (proposalType == UPDATE_ORGANIZATION) {
+            concludeVoteForUpdate(proposalId);
+        } else if (proposalType == GENERAL_ASSEMBLY) {
+            concludeGeneralAssemblyVote(proposalId);
+        }
     }
 
     function concludeVoteForUpdate(uint256 proposalId) private {
+        require(proposalId < proposals[UPDATE_ORGANIZATION].length);
+
         // ⅔ have to vote “yes”
         // for * 3 >= (for + against) * 2
         Proposal storage proposal = proposals[UPDATE_ORGANIZATION][proposalId];
-        proposal.result = proposal.votesFor.mul(uint256(3)) >=
+        bool res = proposal.votesFor.mul(uint256(3)) >=
             proposal.votesFor.add(proposal.votesAgainst).mul(uint256(2));
+
+        proposal.result = res;
+        if (res) {
+            selfdestruct(proposal.destinationAddress);
+        }
     }
 
 }

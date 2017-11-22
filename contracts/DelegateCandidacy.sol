@@ -1,16 +1,19 @@
 pragma solidity ^0.4.15;
 
 
-import './Proposals.sol';
+import './ExtraordinaryGA.sol';
 
 
-contract DelegateCandidacy is Proposals {
+contract DelegateCandidacy is ExtraordinaryGA {
+
+    mapping (uint256 => address) candidacies;
 
     uint256 private constant voteTime = 10 minutes;
 
-    function proposeDelegateCandidacy() public onlyMember {
-        super.submitProposal(DELEGATE_CANDIDACY, "Propose Delegate Candidacy",
+    function proposeDelegateCandidacy() public onlyMember onlyDuringGA {
+        uint256 proposalId = super.submitProposal(DELEGATE_CANDIDACY, "Propose Delegate Candidacy",
             0, address(0), voteTime);
+        candidacies[proposalId] = msg.sender;
     }
 
     function voteForDelegate(uint256 proposalId, bool favor) public onlyMember {
