@@ -44,13 +44,12 @@ contract UpdateOrganization is ExtraordinaryGA {
     }
 
     function concludeVoteForUpdate(uint256 proposalId) private {
-        require(proposalId < proposals[UPDATE_ORGANIZATION].length);
+        // require(proposalId < proposals[UPDATE_ORGANIZATION].length);
 
-        // ⅔ have to vote “yes”
-        // for * 3 >= (for + against) * 2
+        // ⅔ of all existing members have to vote “yes”
+        // for * 3 >= (all members) * 2
         Proposal storage proposal = proposals[UPDATE_ORGANIZATION][proposalId];
-        bool res = proposal.votesFor.mul(uint256(3)) >=
-            proposal.votesFor.add(proposal.votesAgainst).mul(uint256(2));
+        bool res = proposal.votesFor.mul(uint256(3)) >= getAllMembersCount().mul(uint256(2));
 
         proposal.result = res;
         if (res) {

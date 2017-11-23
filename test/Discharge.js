@@ -16,7 +16,7 @@ const Discharge = artifacts.require('Discharge.sol');
 contract('Discharge', function(accounts) {
 
     let discharge;
-    let gaDate;
+    let annualGADate;
 
     const delegate = accounts[0];
     const newMember = accounts[2];
@@ -51,18 +51,18 @@ contract('Discharge', function(accounts) {
         await discharge.payMembership({from: newMember, value: amount});
 
 
-        gaDate = latestTime() + duration.weeks(10);
-        await discharge.setAnnualAssemblyDate(gaDate, {from: delegate});
+        annualGADate = latestTime() + duration.weeks(10);
+        await discharge.setAnnualAssemblyDate(annualGADate, {from: delegate});
 
         const latestAddedGA = await discharge.getLatestAddedGA();
-        latestAddedGA[0].should.be.bignumber.equal(gaDate);
+        latestAddedGA[0].should.be.bignumber.equal(annualGADate);
         latestAddedGA[1].should.be.bignumber.equal(0); // finished
         latestAddedGA[2].should.equal(true); // annual
 
     });
 
     it('should propose Discharge', async function() {
-        await increaseTimeTo(gaDate);
+        await increaseTimeTo(annualGADate);
 
         await discharge.proposeDischarge({from: delegate});
         const proposal = await discharge.getDischargeProposal(0);
@@ -71,7 +71,7 @@ contract('Discharge', function(accounts) {
     });
 
     it('should propose Discharge (from non-delegate account)', async function() {
-        await increaseTimeTo(gaDate);
+        await increaseTimeTo(annualGADate);
 
         try {
             await discharge.proposeDischarge({from: newMember});
@@ -82,7 +82,7 @@ contract('Discharge', function(accounts) {
     });
 
     it('should propose Discharge (not during annual GA)', async function() {
-        // await increaseTimeTo(gaDate);
+        // await increaseTimeTo(annualGADate);
 
         try {
             await discharge.proposeDischarge({from: delegate});
@@ -94,7 +94,7 @@ contract('Discharge', function(accounts) {
 
 
     it('should vote for Discharge', async function() {
-        await increaseTimeTo(gaDate);
+        await increaseTimeTo(annualGADate);
 
         await discharge.proposeDischarge({from: delegate});
 
@@ -109,7 +109,7 @@ contract('Discharge', function(accounts) {
     });
 
     it('should conclude vote for Discharge', async function() {
-        await increaseTimeTo(gaDate);
+        await increaseTimeTo(annualGADate);
 
         await discharge.proposeDischarge({from: delegate});
         await discharge.voteForDischarge(0, true, {from: newMember});

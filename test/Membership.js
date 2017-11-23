@@ -56,7 +56,7 @@ contract('Membership', function(accounts) {
         await membership.requestMembership({from: newMember});
 
         const count = await membership.getAllMembersCount();
-        count.should.be.bignumber.equal(0);
+        count.should.be.bignumber.equal(1); // delegate is already member
 
         const member = await membership.getMember(newMember);
         member[0].should.be.bignumber.equal(NOT_MEMBER);
@@ -112,7 +112,7 @@ contract('Membership', function(accounts) {
         });
 
         const count = await membership.getAllMembersCount();
-        count.should.be.bignumber.equal(0);
+        count.should.be.bignumber.equal(2); // delegate + whitelister
 
         const member = await membership.getMember(newWhitelister1);
         member[0].should.be.bignumber.equal(WHITELISTER);
@@ -203,7 +203,7 @@ contract('Membership', function(accounts) {
         member[2].should.equal(true); // paid
 
         const count = await membership.getAllMembersCount();
-        count.should.be.bignumber.equal(1);
+        count.should.be.bignumber.equal(4); // delegate + 2 whitelisters + new member
     });
 
     it('should leave DAA (existing member)', async function() {
@@ -221,12 +221,12 @@ contract('Membership', function(accounts) {
         await membership.payMembership({from: newMember, value: membershipPrice});
 
         const count = await membership.getAllMembersCount();
-        count.should.be.bignumber.equal(1);
+        count.should.be.bignumber.equal(4); // delegate + 2 whitelisters + new member
 
         await membership.leaveDAA({from: newMember});
 
         const countAfterLeaving = await membership.getAllMembersCount();
-        countAfterLeaving.should.be.bignumber.equal(0);
+        countAfterLeaving.should.be.bignumber.equal(3); // delegate + 2 whitelisters
 
         const member = await membership.getMember(newMember);
         member[0].should.be.bignumber.equal(NOT_MEMBER);

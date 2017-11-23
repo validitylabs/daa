@@ -85,7 +85,7 @@ contract ExtraordinaryGA is Proposals {
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
         // TODO: has to be in the future by at least one voting duration
-        require(date > now);
+        require(date > now.add(voteTime));
 
         uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
             "Propose General Assembly Date", 0, address(0), voteTime);
@@ -99,7 +99,7 @@ contract ExtraordinaryGA is Proposals {
     function setAnnualAssemblyDate(uint256 date) public onlyDelegate {
         // Minimally 1 month before date of GA
         // After date of general assembly 9 months blocked
-        require(now < date.sub(ONE_MONTH));
+        require(date > now.add(ONE_MONTH));
         require(date > generalAssemblies[current].finished.add(NINE_MONTHS));
 
         generalAssemblies.push(GA(date, 0, true));

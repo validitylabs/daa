@@ -29,7 +29,7 @@ contract('UpdateOrganization', function(accounts) {
     const prGADuration = duration.days(14);
     // const extendedDuration = 120; // 2 mins in seconds
 
-    // const nonMember = accounts[6];
+    const nonMember = accounts[6];
 
     const newDAO = accounts[7];
 
@@ -105,6 +105,17 @@ contract('UpdateOrganization', function(accounts) {
         }
     });
 
+    it('should propose Update Organization (from non-member)', async function() {
+        await increaseTimeTo(gaDate);
+
+        try {
+            await updateOrganization.proposeUpdate(newDAO, {from: nonMember});
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
+    });
+
     it('should propose Update Organization (not during GA)', async function() {
         // await increaseTimeTo(gaDate);
 
@@ -132,7 +143,7 @@ contract('UpdateOrganization', function(accounts) {
         // proposal[8].should.equal(false); // concluded
     });
 
-    it('should conclude vote for Update Organization', async function() {
+    it('should conclude vote for Update Organization (result true)', async function() {
         await increaseTimeTo(gaDate);
 
         const startContractBalance = await web3.eth.getBalance(updateOrganization.address);
@@ -142,18 +153,24 @@ contract('UpdateOrganization', function(accounts) {
         await updateOrganization.proposeUpdate(newDAO, {from: newMember});
         await updateOrganization.voteForUpdate(0, true, {from: newMember});
 
+        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister1});
+        await updateOrganization.voteForUpdate(0, true, {from: delegate});
+
+        // 3 for, 0 against from 4 members
+
         const endTime =   latestTime() + duration.minutes(10); // voteTime = 10 minutes;
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
 
         // after the voting time has expired => concludeGeneralAssemblyVote
-        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister1});
+        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister2});
 
-        // const proposal = await updateOrganization.getUpdOrganizationProposal(0);
+        // then selfdestruct(proposal.destinationAddress); in the contract
 
-        // proposal[8].should.equal(true); // concluded
-        // proposal[9].should.equal(true); // result
+        const proposal = await updateOrganization.getUpdOrganizationProposal(0);
+        proposal[8].should.equal(false); // concluded
+        proposal[9].should.equal(false); // result
 
         const member = await updateOrganization.getMember(delegate);
         member[0].should.be.bignumber.equal(0); // DELEGATE = 2;
@@ -164,6 +181,31 @@ contract('UpdateOrganization', function(accounts) {
 
         newContractBalance.should.be.bignumber.equal(0);
         startNewDAOBalance.plus(startContractBalance).should.be.bignumber.equal(newNewDAOBalance);
+    });
+
+    it('should conclude vote for Update Organization (result false)', async function() {
+        await increaseTimeTo(gaDate);
+
+        await updateOrganization.proposeUpdate(newDAO, {from: newMember});
+        await updateOrganization.voteForUpdate(0, true, {from: newMember});
+
+        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister1});
+        await updateOrganization.voteForUpdate(0, false, {from: delegate});
+
+        // 2 for, 1 against from 4 members
+
+        const endTime =   latestTime() + duration.minutes(10); // voteTime = 10 minutes;
+        const afterEndTime = endTime + duration.seconds(1);
+
+        await increaseTimeTo(afterEndTime);
+
+        // after the voting time has expired => concludeGeneralAssemblyVote
+        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister2});
+
+        const proposal = await updateOrganization.getUpdOrganizationProposal(0);
+
+        proposal[8].should.equal(true); // concluded
+        proposal[9].should.equal(false); // result
     });
 
 });

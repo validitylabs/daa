@@ -40,6 +40,7 @@ contract ExpelMember is Proposals {
         membersToExpel[proposalId] = member;
     }
 
+    // can not vote against ?
     function voteToExpelMember(uint256 proposalId, bool favor) public onlyMember {
         super.voteForProposal(EXPEL_MEMBER, proposalId, favor);
     }
@@ -50,12 +51,12 @@ contract ExpelMember is Proposals {
 
 
     function concludeExpel(uint256 proposalId) private {
-        // ⅔ have to vote “yes”
+        // 10 % of all members have voted AND ⅔ of those voters were in favor
         // for * 3 >= (for + against) * 2
         Proposal storage proposal = proposals[EXPEL_MEMBER][proposalId];
         uint256 allVoted = proposal.votesFor.add(proposal.votesAgainst);
-        bool res = proposal.votesFor.mul(uint256(3)) >= allVoted.mul(uint256(2)) &&
-            allVoted.mul(uint256(10)) >= getAllMembersCount();
+        bool res = allVoted.mul(uint256(10)) >= getAllMembersCount() &&
+            proposal.votesFor.mul(uint256(3)) >= allVoted.mul(uint256(2));
 
         proposal.result = res;
         if (res) {

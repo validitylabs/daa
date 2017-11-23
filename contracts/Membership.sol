@@ -24,16 +24,18 @@ contract Membership {
 
     function Membership() {
         members[msg.sender] = Member(MemberTypes.DELEGATE, 0, false); // TODO:
+        allMembers = 1;
     }
 
     function() {
         payMembership();
     }
 
+    // delegate, whitelister are also members
     modifier onlyMember() {
         require(members[msg.sender].memberType == MemberTypes.EXISTING_MEMBER
             || members[msg.sender].memberType == MemberTypes.WHITELISTER
-            || members[msg.sender].memberType == MemberTypes.DELEGATE); // TODO: ?
+            || members[msg.sender].memberType == MemberTypes.DELEGATE);
         _;
     }
 
@@ -66,6 +68,7 @@ contract Membership {
 
     function addWhitelister(address addrs) public onlyDelegate {
         members[addrs] = Member(MemberTypes.WHITELISTER, 0, false);
+        allMembers = allMembers.add(1);
     }
 
     function removeWhitelister(address addrs) public onlyDelegate {

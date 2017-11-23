@@ -16,8 +16,9 @@ contract DelegateCandidacy is ExtraordinaryGA {
         candidacies[proposalId] = msg.sender;
     }
 
-    function voteForDelegate(uint256 proposalId, bool favor) public onlyMember {
-        super.voteForProposal(DELEGATE_CANDIDACY, proposalId, favor);
+    // can not vote against
+    function voteForDelegate(uint256 proposalId) public onlyMember {
+        super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true);
     }
 
     function concludeProposal(uint256 proposalId) internal {
