@@ -17,7 +17,7 @@ contract ExtraordinaryGA is Proposals {
     uint256 private constant NINE_MONTHS = 274 days; // TODO:
 
     GA[] public generalAssemblies;
-    uint256 current;
+    uint256 current; // TODO: Setter
 
     mapping (uint256 => uint256) datesForVoting;
 
@@ -81,6 +81,11 @@ contract ExtraordinaryGA is Proposals {
     {
         GA storage currentGA = generalAssemblies[current];
         return (currentGA.date, currentGA.finished, currentGA.annual);
+    }
+
+    function getCurrentGADate() public constant returns (uint256) {
+        GA storage currentGA = generalAssemblies[current];
+        return currentGA.date;
     }
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {

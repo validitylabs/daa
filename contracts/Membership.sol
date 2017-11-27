@@ -19,10 +19,13 @@ contract Membership {
     mapping (address => Member) public members;
     uint256 allMembers;
 
+    address public delegate;
+
     // member => (whitelister => time)
     // mapping (address => mapping(address => uint256)) public whitelistMembers;
 
     function Membership() {
+        delegate = msg.sender;
         members[msg.sender] = Member(MemberTypes.DELEGATE, 0, false); // TODO:
         allMembers = 1;
     }
@@ -111,6 +114,18 @@ contract Membership {
 
     function removeMemberThatDidntPay(address addrs) internal {
         delete members[addrs];
+    }
+
+    function setDelegate(address newDelegate) internal {
+        require(delegate != newDelegate);
+
+        // TODO:
+        members[delegate].memberType = MemberTypes.EXISTING_MEMBER;
+        // members[delegate].whitelisted = 2;
+        // members[delegate].paid = true;
+
+        delegate = newDelegate;
+        members[newDelegate].memberType = MemberTypes.DELEGATE;
     }
 
     function concludeJoining(address addrs) private {

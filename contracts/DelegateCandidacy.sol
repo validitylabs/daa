@@ -6,28 +6,133 @@ import './ExtraordinaryGA.sol';
 
 contract DelegateCandidacy is ExtraordinaryGA {
 
-    mapping (uint256 => address) candidacies;
+    struct Conclusion {
+        uint256 proposalId;
+        address candidate;
+        uint256 votesFor;
+    }
+
+    // by date
+    mapping(uint256 => uint256) latestProposal;
+    // by date
+    mapping (uint256 => mapping(address => bool)) voted;
+    // by date
+    mapping(uint256 => Conclusion[]) concluded;
 
     uint256 private constant voteTime = 10 minutes;
 
+    // Proposal has to be readable by external SC
+    function getDelegateCandidacyProposal(uint256 proposalId) external constant returns (
+        address submitter,
+        bytes32 name,
+        uint256 amount,
+        address destinationAddress,
+        uint256 startTime,
+        uint256 duration,
+        uint256 votesFor,
+        uint256 votesAgainst,
+        bool concluded,
+        bool result
+    )
+    {
+        return getProposal(DELEGATE_CANDIDACY, proposalId);
+    }
+
     function proposeDelegateCandidacy() public onlyMember onlyDuringGA {
-        uint256 proposalId = super.submitProposal(DELEGATE_CANDIDACY, "Propose Delegate Candidacy",
-            0, address(0), voteTime);
-        candidacies[proposalId] = msg.sender;
+        proposeDelegateCandidacy(msg.sender);
     }
 
     // can not vote against
     function voteForDelegate(uint256 proposalId) public onlyMember {
+        // Any member can vote for exactly one candidate (or not vote at all)
+        uint256 date = getCurrentGADate();
+        require(!voted[date][msg.sender]);
+
         super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true);
+        voted[date][msg.sender] = true;
     }
 
-    function concludeProposal(uint256 proposalId) internal {
-        concludeVoteForDelegate(proposalId);
+    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
+        if (proposalType == DELEGATE_CANDIDACY) {
+            concludeVoteForDelegate(proposalId);
+        } else if (proposalType == GENERAL_ASSEMBLY) {
+            concludeGeneralAssemblyVote(proposalId);
+        }
+    }
+
+    function proposeDelegateCandidacy(address candidate) private {
+        uint256 proposalId = super.submitProposal(
+            DELEGATE_CANDIDACY,
+            "Propose Delegate Candidacy",
+            0,
+            candidate, // address(0),
+            voteTime
+        );
+
+        latestProposal[getCurrentGADate()] = proposalId;
+    }
+
+    function calculateVotes() private {
+        uint256 date = getCurrentGADate();
+        Conclusion[] storage concl = concluded[date];
+
+        uint256 maxVotes = 0;
+        uint256 count = 0;
+
+        uint256[] indexArray; // TODO:
+
+        uint256 i;
+        for (i = 0; i < concl.length; i++) {
+            if (concl[i].votesFor > maxVotes) {
+                maxVotes = concl[i].votesFor;
+                count = 0;
+
+                // https://ethereum.stackexchange.com/a/3377
+                if (count == indexArray.length) {
+                    indexArray.length += 1;
+                }
+                indexArray[count++] = i;
+
+            } else if (concl[i].votesFor == maxVotes) {
+                if (count == indexArray.length) {
+                    indexArray.length += 1;
+                }
+                indexArray[count++] = i;
+            }
+        }
+
+        if (maxVotes > 0) {
+            if (count == 1) {
+                address newDelegate = concl[index].candidate;
+                setDelegate(newDelegate);
+            } else {
+                // re-vote
+                delete concluded[date];
+                // delete voted[date]; // TODO:
+                for (i = 0; i < count; i++) {
+                    uint256 index = indexArray[i];
+                    proposeDelegateCandidacy(concl[index].candidate);
+                }
+            }
+        } else {
+            // TODO:
+        }
     }
 
     function concludeVoteForDelegate(uint256 proposalId) private {
         // TODO: Candidate with most votes in favor is new candidate
         // If 2 or more candidates have same and most number of votes, re-vote on only those
+        var (date, finished, annual) = getCurrentGA();
 
+        Proposal storage proposal = proposals[DELEGATE_CANDIDACY][proposalId];
+        concluded[date].push(
+                Conclusion(proposalId, proposal.destinationAddress, proposal.votesFor)
+        );
+
+        // wait the latest voting
+        if (finished > 0 && latestProposal[date] == proposalId) {
+            calculateVotes();
+        }
     }
+
 }
