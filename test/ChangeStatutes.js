@@ -169,7 +169,7 @@ contract('ChangeStatutes', function(accounts) {
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
+        // after the voting time has expired => concludeVoteForChangeStatutes
         await changeStatutes.voteForChangeStatutes(0, true, {from: newWhitelister2});
 
 
@@ -197,7 +197,7 @@ contract('ChangeStatutes', function(accounts) {
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
+        // after the voting time has expired => concludeVoteForChangeStatutes
         await changeStatutes.voteForChangeStatutes(0, true, {from: newWhitelister2});
 
 

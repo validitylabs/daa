@@ -163,7 +163,7 @@ contract('Dissolution', function(accounts) {
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
+        // after the voting time has expired => concludeVoteForDissolution
         await dissolution.voteForDissolution(0, true, {from: newWhitelister2});
 
         // then selfdestruct(proposal.destinationAddress); in the contract
@@ -199,7 +199,7 @@ contract('Dissolution', function(accounts) {
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
+        // after the voting time has expired => concludeVoteForDissolution
         await dissolution.voteForDissolution(0, true, {from: newWhitelister2});
 
         const proposal = await dissolution.getDissolutionProposal(0);

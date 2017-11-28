@@ -85,7 +85,9 @@ contract Proposals is Membership {
     }
 
     // submitter can vote for proposal
-    function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor) internal onlyMember {
+    function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor)
+        internal onlyMember returns (bool)
+    {
         Proposal storage proposal = proposals[proposalType][proposalId];
         require(!proposal.concluded);
         require(!proposal.voted[msg.sender]);
@@ -97,9 +99,11 @@ contract Proposals is Membership {
             } else {
                 proposal.votesAgainst = proposal.votesAgainst.add(1);
             }
+            return true;
         } else {
             proposal.concluded = true;
             concludeProposal(proposalType, proposalId);
+            return false;
         }
     }
 

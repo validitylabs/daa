@@ -48,8 +48,9 @@ contract DelegateCandidacy is ExtraordinaryGA {
         uint256 date = getCurrentGADate();
         require(!voted[date][msg.sender]);
 
-        super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true);
-        voted[date][msg.sender] = true;
+        if (super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true)) {
+            voted[date][msg.sender] = true;
+        }
     }
 
     function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
@@ -107,7 +108,9 @@ contract DelegateCandidacy is ExtraordinaryGA {
                 setDelegate(newDelegate);
             } else {
                 // re-vote
-                delete concluded[date];
+                // TODO:
+                delete concluded[date][0];
+                delete concluded[date][1];
                 // delete voted[date]; // TODO:
                 for (i = 0; i < count; i++) {
                     uint256 index = indexArray[i];

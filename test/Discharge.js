@@ -119,7 +119,7 @@ contract('Discharge', function(accounts) {
 
         await increaseTimeTo(afterEndTime);
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
+        // after the voting time has expired => concludeVoteForDischarge
         await discharge.voteForDischarge(0, true, {from: newWhitelister1});
 
         const proposal = await discharge.getDischargeProposal(0);
