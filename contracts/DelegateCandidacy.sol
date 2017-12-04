@@ -125,7 +125,7 @@ contract DelegateCandidacy is ExtraordinaryGA {
     function concludeVoteForDelegate(uint256 proposalId) private {
         // TODO: Candidate with most votes in favor is new candidate
         // If 2 or more candidates have same and most number of votes, re-vote on only those
-        var (date, finished, annual) = getCurrentGA();
+        var (date, started, finished, annual) = getCurrentGA();
 
         Proposal storage proposal = proposals[DELEGATE_CANDIDACY][proposalId];
         concluded[date].push(

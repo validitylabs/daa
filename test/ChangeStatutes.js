@@ -92,6 +92,7 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should set hash of statutes', async function() {
         await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         const proposal = await changeStatutes.getChangeStatutesProposal(0);
@@ -103,6 +104,7 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should set hash of statutes (empty hash)', async function() {
         await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         try {
             await changeStatutes.setHashOfStatutes('', {from: newMember});
@@ -114,6 +116,7 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should set hash of statutes (from non-member)', async function() {
         await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         const m = await changeStatutes.getMember(nonMember);
         m[0].should.be.bignumber.equal(0); // NOT_MEMBER = 0;
@@ -128,6 +131,7 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should set hash of statutes (not during GA)', async function() {
         // await increaseTimeTo(gaDate);
+        // await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         try {
             await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
@@ -140,9 +144,9 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should vote for change statutes', async function() {
         await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
-
         await changeStatutes.voteForChangeStatutes(0, true, {from: newMember});
 
         const proposal = await changeStatutes.getChangeStatutesProposal(0);
@@ -155,6 +159,7 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should conclude vote for Update Organization (result true)', async function() {
         await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         await changeStatutes.voteForChangeStatutes(0, true, {from: newMember});
@@ -183,6 +188,7 @@ contract('ChangeStatutes', function(accounts) {
 
     it('should conclude vote for Update Organization (result false)', async function() {
         await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
 
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         await changeStatutes.voteForChangeStatutes(0, true, {from: newMember});

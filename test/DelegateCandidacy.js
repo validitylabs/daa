@@ -83,9 +83,10 @@ contract('DelegateCandidacy', function(accounts) {
         // await delegateCandidacy.finishCurrentGeneralAssembly({from: delegate});
 
     });
-/*
+
     it('should propose Delegate Candidacy', async function() {
         await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         const proposal = await delegateCandidacy.getDelegateCandidacyProposal(0);
@@ -96,6 +97,7 @@ contract('DelegateCandidacy', function(accounts) {
 
     it('should propose Delegate Candidacy (from non-member)', async function() {
         await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         try {
             await delegateCandidacy.proposeDelegateCandidacy({from: nonMember});
@@ -107,6 +109,7 @@ contract('DelegateCandidacy', function(accounts) {
 
     it('should propose Delegate Candidacy (not during GA)', async function() {
         // await increaseTimeTo(gaDate);
+        // await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         try {
             await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
@@ -119,9 +122,9 @@ contract('DelegateCandidacy', function(accounts) {
 
     it('should vote for Delegate Candidacy', async function() {
         await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
-
         await delegateCandidacy.voteForDelegate(0, {from: newMember});
 
         const proposal = await delegateCandidacy.getDelegateCandidacyProposal(0);
@@ -134,6 +137,7 @@ contract('DelegateCandidacy', function(accounts) {
 
     it('should vote for Delegate Candidacy (1 member votes for 2 candidates)', async function() {
         await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.proposeDelegateCandidacy({from: newWhitelister1});
@@ -151,6 +155,7 @@ contract('DelegateCandidacy', function(accounts) {
 
     it('should conclude vote for Delegate', async function() {
         await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.voteForDelegate(0, {from: newMember});
@@ -196,9 +201,10 @@ contract('DelegateCandidacy', function(accounts) {
         member1 = await delegateCandidacy.getMember(newMember);
         member1[0].should.be.bignumber.equal(2); // DELEGATE = 2;
     });
-*/
+
     it('should conclude vote for Delegate (re-vote)', async function() {
         await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
 
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.voteForDelegate(0, {from: newMember});

@@ -86,6 +86,7 @@ contract('Dissolution', function(accounts) {
 
     it('should propose Dissolution', async function() {
         await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
 
         await dissolution.proposeDissolution(beneficiary, {from: newMember});
         const proposal = await dissolution.getDissolutionProposal(0);
@@ -96,6 +97,7 @@ contract('Dissolution', function(accounts) {
 
     it('should propose Dissolution (empty beneficiary account)', async function() {
         await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
 
         try {
             await dissolution.proposeDissolution(0x0, {from: newMember});
@@ -107,6 +109,7 @@ contract('Dissolution', function(accounts) {
 
     it('should propose Dissolution (from non-member)', async function() {
         await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
 
         try {
             await dissolution.proposeDissolution(beneficiary, {from: nonMember});
@@ -118,6 +121,7 @@ contract('Dissolution', function(accounts) {
 
     it('should propose Dissolution (not during GA)', async function() {
         // await increaseTimeTo(gaDate);
+        // await dissolution.startGeneralAssembly(0, {from: delegate});
 
         try {
             await dissolution.proposeDissolution(beneficiary, {from: newMember});
@@ -130,6 +134,7 @@ contract('Dissolution', function(accounts) {
 
     it('should vote for Dissolution', async function() {
         await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
 
         await dissolution.proposeDissolution(beneficiary, {from: newMember});
 
@@ -145,6 +150,7 @@ contract('Dissolution', function(accounts) {
 
     it('should conclude vote for Dissolution (result true)', async function() {
         await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
 
         const startContractBalance = await web3.eth.getBalance(dissolution.address);
         const startBeneficiaryBalance = await web3.eth.getBalance(beneficiary);
@@ -183,8 +189,10 @@ contract('Dissolution', function(accounts) {
         startBeneficiaryBalance.plus(startContractBalance).should.be.bignumber.equal(newBeneficiaryBalance);
     });
 
+
     it('should conclude vote for Dissolution (result false)', async function() {
         await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
 
         await dissolution.proposeDissolution(beneficiary, {from: newMember});
         await dissolution.voteForDissolution(0, true, {from: newMember});

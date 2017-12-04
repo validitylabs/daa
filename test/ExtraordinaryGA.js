@@ -95,8 +95,9 @@ contract('ExtraordinaryGA', function(accounts) {
 
         const latestAddedGA = await extraordinaryGA.getLatestAddedGA();
         latestAddedGA[0].should.be.bignumber.equal(date);
-        latestAddedGA[1].should.be.bignumber.equal(0); // finished
-        latestAddedGA[2].should.equal(false); // annual
+        latestAddedGA[1].should.be.bignumber.equal(0); // started
+        latestAddedGA[2].should.be.bignumber.equal(0); // finished
+        latestAddedGA[3].should.equal(false); // annual
     });
 
 
@@ -105,8 +106,9 @@ contract('ExtraordinaryGA', function(accounts) {
 
         const latestAddedGA = await extraordinaryGA.getLatestAddedGA();
         latestAddedGA[0].should.be.bignumber.equal(date);
-        latestAddedGA[1].should.be.bignumber.equal(0); // finished
-        latestAddedGA[2].should.equal(true); // annual
+        latestAddedGA[1].should.be.bignumber.equal(0); // started
+        latestAddedGA[2].should.be.bignumber.equal(0); // finished
+        latestAddedGA[3].should.equal(true); // annual
     });
 
     it('should set Annual Assembly date from non-delegate', async function() {

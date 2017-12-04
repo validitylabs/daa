@@ -8,6 +8,7 @@ contract ExtraordinaryGA is Proposals {
 
     struct GA {
         uint256 date;
+        uint256 started;
         uint256 finished;
         bool annual;
     }
@@ -20,15 +21,16 @@ contract ExtraordinaryGA is Proposals {
     uint256 current; // TODO: Setter
 
     mapping (uint256 => uint256) datesForVoting;
+    mapping (address => bool) proposalMade;
 
     function ExtraordinaryGA() {
-        current = 0;
-        generalAssemblies.push(GA(0, 0, false));
+        // current = 0;
+        // generalAssemblies.push(GA(0, 0, 0, false));
     }
 
     // TODO:
     modifier onlyDuringGA() {
-        require(now >= generalAssemblies[current].date
+        require(generalAssemblies[current].started > 0 // now >= generalAssemblies[current].date
             && generalAssemblies[current].finished == 0);
         _;
     }
@@ -36,7 +38,7 @@ contract ExtraordinaryGA is Proposals {
     // TODO:
     modifier onlyDuringAnnualGA() {
         require(generalAssemblies[current].annual
-            && now >= generalAssemblies[current].date
+            && generalAssemblies[current].started > 0 // now >= generalAssemblies[current].date
             && generalAssemblies[current].finished == 0);
         _;
     }
@@ -66,21 +68,23 @@ contract ExtraordinaryGA is Proposals {
     function getLatestAddedGA() public constant returns (
         uint256,
         uint256,
+        uint256,
         bool
     )
     {
         GA storage latestAddedGA = generalAssemblies[generalAssemblies.length - 1];
-        return (latestAddedGA.date, latestAddedGA.finished, latestAddedGA.annual);
+        return (latestAddedGA.date, latestAddedGA.started, latestAddedGA.finished, latestAddedGA.annual);
     }
 
     function getCurrentGA() public constant returns (
+        uint256,
         uint256,
         uint256,
         bool
     )
     {
         GA storage currentGA = generalAssemblies[current];
-        return (currentGA.date, currentGA.finished, currentGA.annual);
+        return (currentGA.date, currentGA.started, currentGA.finished, currentGA.annual);
     }
 
     function getCurrentGADate() public constant returns (uint256) {
@@ -89,11 +93,14 @@ contract ExtraordinaryGA is Proposals {
     }
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
-        // TODO: has to be in the future by at least one voting duration
+        // only one proposal for a general assembly can be made per user at any time
+        require(!proposalMade[msg.sender]);
+        // proposal has to be at least in the future by at least one voting duration
         require(date > now.add(voteTime));
 
         uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
             "Propose General Assembly Date", 0, address(0), voteTime);
+        proposalMade[msg.sender] = true;
         datesForVoting[proposalId] = date;
     }
 
@@ -105,10 +112,22 @@ contract ExtraordinaryGA is Proposals {
         // Minimally 1 month before date of GA
         // After date of general assembly 9 months blocked
         require(date > now.add(ONE_MONTH));
-        require(date > generalAssemblies[current].finished.add(NINE_MONTHS));
+        require(generalAssemblies.length == 0 ||
+            date > generalAssemblies[current].finished.add(NINE_MONTHS));
 
-        generalAssemblies.push(GA(date, 0, true));
-        current = generalAssemblies.length - 1;
+        generalAssemblies.push(GA(date, 0, 0, true));
+        // current = generalAssemblies.length - 1;
+    }
+
+    function startGeneralAssembly(uint256 id) public onlyDelegate {
+        require(id < generalAssemblies.length);
+
+        GA storage ga = generalAssemblies[current];
+        require(ga.finished == 0);
+        require(now >= ga.date);
+
+        ga.started = now;
+        current = id;
     }
 
     function finishCurrentGeneralAssembly() public onlyDelegate {
@@ -143,8 +162,8 @@ contract ExtraordinaryGA is Proposals {
         proposal.result = res;
         if (res) {
             uint256 date = datesForVoting[proposalId];
-            generalAssemblies.push(GA(date, 0, false));
-            current = generalAssemblies.length - 1;
+            generalAssemblies.push(GA(date, 0, 0, false));
+            // current = generalAssemblies.length - 1;
         }
 
     }
