@@ -212,15 +212,12 @@ contract('SimpleProposals', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired
-        await simpleProposals.voteForProposal(0, true, {from: newWhitelister1});
+        await simpleProposals.concludeProposal(0, {from: delegate});
 
         const proposal = await simpleProposals.getSimpleProposal(0);
 
         proposal[8].should.equal(true); // concluded
         proposal[9].should.equal(true); // result
-
     });
 
 });

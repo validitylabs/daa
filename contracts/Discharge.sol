@@ -33,20 +33,15 @@ contract Discharge is ExtraordinaryGA {
         super.voteForProposal(DISCHARGE, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
-        if (proposalType == DISCHARGE) {
-            concludeVoteForDischarge(proposalId);
-        } else if (proposalType == GENERAL_ASSEMBLY) {
-            concludeGeneralAssemblyVote(proposalId);
-        }
-    }
+    function concludeVoteForDischarge(uint256 proposalId) public onlyMember {
+        super.concludeProposal(DISCHARGE, proposalId);
 
-    function concludeVoteForDischarge(uint256 proposalId) private {
         // We need simple majority in favor of discharge. A resulting event will be logged.
         // This has no influence on DAA, is only required for legal reasons
         // (the delegate might be legally responsible).
         Proposal storage proposal = proposals[DISCHARGE][proposalId];
         proposal.result = proposal.votesFor > proposal.votesAgainst;
+        proposal.concluded = true;
     }
 
 }

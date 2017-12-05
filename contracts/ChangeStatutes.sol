@@ -46,21 +46,16 @@ contract ChangeStatutes is ExtraordinaryGA {
         super.voteForProposal(CHANGE_STATUTES, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
-        if (proposalType == CHANGE_STATUTES) {
-            concludeVoteForChangeStatutes(proposalId);
-        } else if (proposalType == GENERAL_ASSEMBLY) {
-            concludeGeneralAssemblyVote(proposalId);
-        }
-    }
+    function concludeVoteForChangeStatutes(uint256 proposalId) public onlyMember {
+        super.concludeProposal(CHANGE_STATUTES, proposalId);
 
-    function concludeVoteForChangeStatutes(uint256 proposalId) private {
         // ⅔ of all existing members have to vote “yes”
         // for * 3 >= (all members) * 2
         Proposal storage proposal = proposals[CHANGE_STATUTES][proposalId];
         bool res = proposal.votesFor.mul(uint256(3)) >= getAllMembersCount().mul(uint256(2));
 
         proposal.result = res;
+        proposal.concluded = true;
         if (res) {
             currentStatutes = hashesForVoting[proposalId];
         }

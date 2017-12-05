@@ -35,16 +35,8 @@ contract UpdateOrganization is ExtraordinaryGA {
         super.voteForProposal(UPDATE_ORGANIZATION, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
-        if (proposalType == UPDATE_ORGANIZATION) {
-            concludeVoteForUpdate(proposalId);
-        } else if (proposalType == GENERAL_ASSEMBLY) {
-            concludeGeneralAssemblyVote(proposalId);
-        }
-    }
-
-    function concludeVoteForUpdate(uint256 proposalId) private {
-        // require(proposalId < proposals[UPDATE_ORGANIZATION].length);
+    function concludeVoteForUpdate(uint256 proposalId) public onlyMember {
+        super.concludeProposal(UPDATE_ORGANIZATION, proposalId);
 
         // ⅔ of all existing members have to vote “yes”
         // for * 3 >= (all members) * 2
@@ -52,6 +44,7 @@ contract UpdateOrganization is ExtraordinaryGA {
         bool res = proposal.votesFor.mul(uint256(3)) >= getAllMembersCount().mul(uint256(2));
 
         proposal.result = res;
+        proposal.concluded = true;
         if (res) {
             selfdestruct(proposal.destinationAddress);
         }

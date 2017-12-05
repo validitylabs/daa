@@ -45,12 +45,9 @@ contract ExpelMember is Proposals {
         super.voteForProposal(EXPEL_MEMBER, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalId) internal {
-        concludeExpel(proposalId);
-    }
+    function concludeExpel(uint256 proposalId) public onlyMember {
+        super.concludeProposal(EXPEL_MEMBER, proposalId);
 
-
-    function concludeExpel(uint256 proposalId) private {
         // 10 % of all members have voted AND ⅔ of those voters were in favor
         // for * 3 >= (for + against) * 2
         Proposal storage proposal = proposals[EXPEL_MEMBER][proposalId];
@@ -59,6 +56,7 @@ contract ExpelMember is Proposals {
             proposal.votesFor.mul(uint256(3)) >= allVoted.mul(uint256(2));
 
         proposal.result = res;
+        proposal.concluded = true;
         if (res) {
             address addrs = membersToExpel[proposalId];
             delete members[addrs];

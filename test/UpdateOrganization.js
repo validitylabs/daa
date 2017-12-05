@@ -61,39 +61,13 @@ contract('UpdateOrganization', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
+        await updateOrganization.concludeGeneralAssemblyVote(0, {from: delegate});
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
-        await updateOrganization.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
-
-
-        // const proposal = await updateOrganization.getGADateProposal(0);
-        // proposal[8].should.equal(true); // concluded
-        // proposal[9].should.equal(true); // result
-
-        // const ga = await updateOrganization.getCurrentGA();
-        // console.log(ga[0].toString());
-        // console.log(ga[1].toString());
-        // console.log(ga[2]);
-
-        // await increaseTimeTo(gaDate);
-
-        // const finishGADate = gaDate + duration.days(10);
-        // await increaseTimeTo(finishGADate);
-
-        // await updateOrganization.finishCurrentGeneralAssembly({from: delegate});
-
+        await increaseTimeTo(gaDate);
+        await updateOrganization.startGeneralAssembly(0, {from: delegate});
     });
 
     it('should propose Update Organization', async function() {
-        await increaseTimeTo(gaDate);
-        await updateOrganization.startGeneralAssembly(0, {from: delegate});
-
-        // const latestAddedGA = await updateOrganization.getLatestAddedGA();
-        // console.log(latestAddedGA[0]);
-        // console.log(latestAddedGA[1]);
-        // console.log(latestAddedGA[2]);
-        // console.log(latestAddedGA[3]);
-
         await updateOrganization.proposeUpdate(newDAO, {from: newMember});
         const proposal = await updateOrganization.getUpdOrganizationProposal(0);
         proposal[0].should.equal(newMember); // submitter
@@ -102,9 +76,6 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     it('should propose Update Organization (empty DAO account)', async function() {
-        await increaseTimeTo(gaDate);
-        await updateOrganization.startGeneralAssembly(0, {from: delegate});
-
         try {
             await updateOrganization.proposeUpdate(0x0, {from: newMember});
             assert.fail('should have thrown before');
@@ -114,9 +85,6 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     it('should propose Update Organization (from non-member)', async function() {
-        await increaseTimeTo(gaDate);
-        await updateOrganization.startGeneralAssembly(0, {from: delegate});
-
         try {
             await updateOrganization.proposeUpdate(newDAO, {from: nonMember});
             assert.fail('should have thrown before');
@@ -126,8 +94,7 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     it('should propose Update Organization (not during GA)', async function() {
-        // await increaseTimeTo(gaDate);
-        // await updateOrganization.startGeneralAssembly(0, {from: delegate});
+        await updateOrganization.finishCurrentGeneralAssembly({from: delegate});
 
         try {
             await updateOrganization.proposeUpdate(newDAO, {from: newMember});
@@ -139,9 +106,6 @@ contract('UpdateOrganization', function(accounts) {
 
 
     it('should vote for Update Organization', async function() {
-        await increaseTimeTo(gaDate);
-        await updateOrganization.startGeneralAssembly(0, {from: delegate});
-
         await updateOrganization.proposeUpdate(newDAO, {from: newMember});
         await updateOrganization.voteForUpdate(0, true, {from: newMember});
 
@@ -154,9 +118,6 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     it('should conclude vote for Update Organization (result true)', async function() {
-        await increaseTimeTo(gaDate);
-        await updateOrganization.startGeneralAssembly(0, {from: delegate});
-
         const startContractBalance = await web3.eth.getBalance(updateOrganization.address);
         const startNewDAOBalance = await web3.eth.getBalance(newDAO);
 
@@ -173,9 +134,7 @@ contract('UpdateOrganization', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForUpdate
-        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister2});
+        await updateOrganization.concludeVoteForUpdate(0, {from: delegate});
 
         // then selfdestruct(proposal.destinationAddress); in the contract
 
@@ -195,9 +154,6 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     it('should conclude vote for Update Organization (result false)', async function() {
-        await increaseTimeTo(gaDate);
-        await updateOrganization.startGeneralAssembly(0, {from: delegate});
-
         await updateOrganization.proposeUpdate(newDAO, {from: newMember});
         await updateOrganization.voteForUpdate(0, true, {from: newMember});
 
@@ -210,9 +166,7 @@ contract('UpdateOrganization', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForUpdate
-        await updateOrganization.voteForUpdate(0, true, {from: newWhitelister2});
+        await updateOrganization.concludeVoteForUpdate(0, {from: delegate});
 
         const proposal = await updateOrganization.getUpdOrganizationProposal(0);
 

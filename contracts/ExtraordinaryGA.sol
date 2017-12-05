@@ -135,7 +135,7 @@ contract ExtraordinaryGA is Proposals {
 
         GA storage ga = generalAssemblies[current];
         require(ga.finished == 0);
-        require(now > ga.date);
+        require(now >= ga.date);
         ga.finished = now;
     }
 
@@ -147,12 +147,8 @@ contract ExtraordinaryGA is Proposals {
         // the GAA is legally not having rights to do business during this period.
     }
 
-    function concludeProposal(uint256 proposalId) internal {
-        concludeGeneralAssemblyVote(proposalId);
-    }
-
-    function concludeGeneralAssemblyVote(uint256 proposalId) internal {
-        require(proposalId < proposals[GENERAL_ASSEMBLY].length);
+    function concludeGeneralAssemblyVote(uint256 proposalId) public onlyMember {
+        super.concludeProposal(GENERAL_ASSEMBLY, proposalId);
 
         // ⅕ of all members have to vote yes
         // for * 5 >= (all members) * 1
@@ -160,12 +156,12 @@ contract ExtraordinaryGA is Proposals {
         bool res = proposal.votesFor.mul(uint256(5)) >= getAllMembersCount();
 
         proposal.result = res;
+        proposal.concluded = true;
         if (res) {
             uint256 date = datesForVoting[proposalId];
             generalAssemblies.push(GA(date, 0, 0, false));
             // current = generalAssemblies.length - 1;
         }
-
     }
 
 }

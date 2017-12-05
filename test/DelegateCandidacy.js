@@ -61,33 +61,13 @@ contract('DelegateCandidacy', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
+        await delegateCandidacy.concludeGeneralAssemblyVote(0, {from: delegate});
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
-        await delegateCandidacy.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
-
-
-        // const proposal = await delegateCandidacy.getGADateProposal(0);
-        // proposal[8].should.equal(true); // concluded
-        // proposal[9].should.equal(true); // result
-
-        // const ga = await delegateCandidacy.getCurrentGA();
-        // console.log(ga[0].toString());
-        // console.log(ga[1].toString());
-        // console.log(ga[2]);
-
-        // await increaseTimeTo(gaDate);
-
-        // const finishGADate = gaDate + duration.days(10);
-        // await increaseTimeTo(finishGADate);
-
-        // await delegateCandidacy.finishCurrentGeneralAssembly({from: delegate});
-
+        await increaseTimeTo(gaDate);
+        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
     });
 
     it('should propose Delegate Candidacy', async function() {
-        await increaseTimeTo(gaDate);
-        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
-
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         const proposal = await delegateCandidacy.getDelegateCandidacyProposal(0);
         proposal[0].should.equal(newMember); // submitter
@@ -96,9 +76,6 @@ contract('DelegateCandidacy', function(accounts) {
     });
 
     it('should propose Delegate Candidacy (from non-member)', async function() {
-        await increaseTimeTo(gaDate);
-        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
-
         try {
             await delegateCandidacy.proposeDelegateCandidacy({from: nonMember});
             assert.fail('should have thrown before');
@@ -108,8 +85,7 @@ contract('DelegateCandidacy', function(accounts) {
     });
 
     it('should propose Delegate Candidacy (not during GA)', async function() {
-        // await increaseTimeTo(gaDate);
-        // await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
+        await delegateCandidacy.finishCurrentGeneralAssembly({from: delegate});
 
         try {
             await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
@@ -121,9 +97,6 @@ contract('DelegateCandidacy', function(accounts) {
 
 
     it('should vote for Delegate Candidacy', async function() {
-        await increaseTimeTo(gaDate);
-        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
-
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.voteForDelegate(0, {from: newMember});
 
@@ -136,9 +109,6 @@ contract('DelegateCandidacy', function(accounts) {
     });
 
     it('should vote for Delegate Candidacy (1 member votes for 2 candidates)', async function() {
-        await increaseTimeTo(gaDate);
-        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
-
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.proposeDelegateCandidacy({from: newWhitelister1});
 
@@ -154,9 +124,6 @@ contract('DelegateCandidacy', function(accounts) {
 
 
     it('should conclude vote for Delegate', async function() {
-        await increaseTimeTo(gaDate);
-        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
-
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.voteForDelegate(0, {from: newMember});
         await delegateCandidacy.voteForDelegate(0, {from: newWhitelister1});
@@ -165,9 +132,7 @@ contract('DelegateCandidacy', function(accounts) {
         let afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDelegate
-        await delegateCandidacy.voteForDelegate(0, {from: newWhitelister2});
+        await delegateCandidacy.concludeVoteForDelegate(0, {from: delegate});
 
         const proposal0 = await delegateCandidacy.getDelegateCandidacyProposal(0);
         proposal0[8].should.equal(true); // concluded
@@ -187,9 +152,7 @@ contract('DelegateCandidacy', function(accounts) {
         afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDelegate
-        await delegateCandidacy.voteForDelegate(1, {from: delegate});
+        await delegateCandidacy.concludeVoteForDelegate(1, {from: delegate});
 
         const proposal1 = await delegateCandidacy.getDelegateCandidacyProposal(1);
         proposal1[8].should.equal(true); // concluded
@@ -203,9 +166,6 @@ contract('DelegateCandidacy', function(accounts) {
     });
 
     it('should conclude vote for Delegate (re-vote)', async function() {
-        await increaseTimeTo(gaDate);
-        await delegateCandidacy.startGeneralAssembly(0, {from: delegate});
-
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.voteForDelegate(0, {from: newMember});
         // await delegateCandidacy.voteForDelegate(0, {from: newWhitelister1});
@@ -214,9 +174,7 @@ contract('DelegateCandidacy', function(accounts) {
         let afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDelegate
-        await delegateCandidacy.voteForDelegate(0, {from: newWhitelister2});
+        await delegateCandidacy.concludeVoteForDelegate(0, {from: delegate});
 
         const proposal0 = await delegateCandidacy.getDelegateCandidacyProposal(0);
         proposal0[8].should.equal(true); // concluded
@@ -236,9 +194,7 @@ contract('DelegateCandidacy', function(accounts) {
         afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDelegate
-        await delegateCandidacy.voteForDelegate(1, {from: newWhitelister1});
+        await delegateCandidacy.concludeVoteForDelegate(1, {from: delegate});
 
         const proposal1 = await delegateCandidacy.getDelegateCandidacyProposal(1);
         proposal1[8].should.equal(true); // concluded
@@ -262,9 +218,7 @@ contract('DelegateCandidacy', function(accounts) {
         afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDelegate
-        await delegateCandidacy.voteForDelegate(2, {from: delegate});
+        await delegateCandidacy.concludeVoteForDelegate(2, {from: delegate});
 
 
         proposal2 = await delegateCandidacy.getDelegateCandidacyProposal(1);

@@ -109,9 +109,7 @@ contract('ExpelMember', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired
-        await expelMember.voteToExpelMember(0, true, {from: newWhitelister1});
+        await expelMember.concludeExpel(0, {from: delegate});
 
         const proposal = await expelMember.getExpelMemberProposal(0);
 

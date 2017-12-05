@@ -67,33 +67,13 @@ contract('ChangeStatutes', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
+        await changeStatutes.concludeGeneralAssemblyVote(0, {from: delegate});
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
-        await changeStatutes.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
-
-
-        // const proposal = await changeStatutes.getGADateProposal(0);
-        // proposal[8].should.equal(true); // concluded
-        // proposal[9].should.equal(true); // result
-
-        // const ga = await changeStatutes.getCurrentGA();
-        // console.log(ga[0].toString());
-        // console.log(ga[1].toString());
-        // console.log(ga[2]);
-
-        // await increaseTimeTo(gaDate);
-
-        // const finishGADate = gaDate + duration.days(10);
-        // await increaseTimeTo(finishGADate);
-
-        // await changeStatutes.finishCurrentGeneralAssembly({from: delegate});
-
+        await increaseTimeTo(gaDate);
+        await changeStatutes.startGeneralAssembly(0, {from: delegate});
     });
 
     it('should set hash of statutes', async function() {
-        await increaseTimeTo(gaDate);
-        await changeStatutes.startGeneralAssembly(0, {from: delegate});
-
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         const proposal = await changeStatutes.getChangeStatutesProposal(0);
         proposal[0].should.equal(newMember); // submitter
@@ -103,9 +83,6 @@ contract('ChangeStatutes', function(accounts) {
     });
 
     it('should set hash of statutes (empty hash)', async function() {
-        await increaseTimeTo(gaDate);
-        await changeStatutes.startGeneralAssembly(0, {from: delegate});
-
         try {
             await changeStatutes.setHashOfStatutes('', {from: newMember});
             assert.fail('should have thrown before');
@@ -115,9 +92,6 @@ contract('ChangeStatutes', function(accounts) {
     });
 
     it('should set hash of statutes (from non-member)', async function() {
-        await increaseTimeTo(gaDate);
-        await changeStatutes.startGeneralAssembly(0, {from: delegate});
-
         const m = await changeStatutes.getMember(nonMember);
         m[0].should.be.bignumber.equal(0); // NOT_MEMBER = 0;
 
@@ -130,8 +104,7 @@ contract('ChangeStatutes', function(accounts) {
     });
 
     it('should set hash of statutes (not during GA)', async function() {
-        // await increaseTimeTo(gaDate);
-        // await changeStatutes.startGeneralAssembly(0, {from: delegate});
+        await changeStatutes.finishCurrentGeneralAssembly({from: delegate});
 
         try {
             await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
@@ -143,9 +116,6 @@ contract('ChangeStatutes', function(accounts) {
 
 
     it('should vote for change statutes', async function() {
-        await increaseTimeTo(gaDate);
-        await changeStatutes.startGeneralAssembly(0, {from: delegate});
-
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         await changeStatutes.voteForChangeStatutes(0, true, {from: newMember});
 
@@ -158,9 +128,6 @@ contract('ChangeStatutes', function(accounts) {
     });
 
     it('should conclude vote for Update Organization (result true)', async function() {
-        await increaseTimeTo(gaDate);
-        await changeStatutes.startGeneralAssembly(0, {from: delegate});
-
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         await changeStatutes.voteForChangeStatutes(0, true, {from: newMember});
 
@@ -173,10 +140,7 @@ contract('ChangeStatutes', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForChangeStatutes
-        await changeStatutes.voteForChangeStatutes(0, true, {from: newWhitelister2});
-
+        await changeStatutes.concludeVoteForChangeStatutes(0, {from: delegate});
 
         const proposal = await changeStatutes.getChangeStatutesProposal(0);
         proposal[8].should.equal(true); // concluded
@@ -187,9 +151,6 @@ contract('ChangeStatutes', function(accounts) {
     });
 
     it('should conclude vote for Update Organization (result false)', async function() {
-        await increaseTimeTo(gaDate);
-        await changeStatutes.startGeneralAssembly(0, {from: delegate});
-
         await changeStatutes.setHashOfStatutes(hashOfStatutes, {from: newMember});
         await changeStatutes.voteForChangeStatutes(0, true, {from: newMember});
 
@@ -202,10 +163,7 @@ contract('ChangeStatutes', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForChangeStatutes
-        await changeStatutes.voteForChangeStatutes(0, true, {from: newWhitelister2});
-
+        await changeStatutes.concludeVoteForChangeStatutes(0, {from: delegate});
 
         const proposal = await changeStatutes.getChangeStatutesProposal(0);
         proposal[8].should.equal(true); // concluded

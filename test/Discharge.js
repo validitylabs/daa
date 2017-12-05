@@ -54,18 +54,19 @@ contract('Discharge', function(accounts) {
         annualGADate = latestTime() + duration.weeks(10);
         await discharge.setAnnualAssemblyDate(annualGADate, {from: delegate});
 
+        /*
         const latestAddedGA = await discharge.getLatestAddedGA();
         latestAddedGA[0].should.be.bignumber.equal(annualGADate);
         latestAddedGA[1].should.be.bignumber.equal(0); // started
         latestAddedGA[2].should.be.bignumber.equal(0); // finished
         latestAddedGA[3].should.equal(true); // annual
+        */
 
+        await increaseTimeTo(annualGADate);
+        await discharge.startGeneralAssembly(0, {from: delegate});
     });
 
     it('should propose Discharge', async function() {
-        await increaseTimeTo(annualGADate);
-        await discharge.startGeneralAssembly(0, {from: delegate});
-
         await discharge.proposeDischarge({from: delegate});
         const proposal = await discharge.getDischargeProposal(0);
         proposal[0].should.equal(delegate); // submitter
@@ -73,9 +74,6 @@ contract('Discharge', function(accounts) {
     });
 
     it('should propose Discharge (from non-delegate account)', async function() {
-        await increaseTimeTo(annualGADate);
-        await discharge.startGeneralAssembly(0, {from: delegate});
-
         try {
             await discharge.proposeDischarge({from: newMember});
             assert.fail('should have thrown before');
@@ -85,8 +83,7 @@ contract('Discharge', function(accounts) {
     });
 
     it('should propose Discharge (not during annual GA)', async function() {
-        // await increaseTimeTo(annualGADate);
-        // await discharge.startGeneralAssembly(0, {from: delegate});
+        await discharge.finishCurrentGeneralAssembly({from: delegate});
 
         try {
             await discharge.proposeDischarge({from: delegate});
@@ -98,11 +95,7 @@ contract('Discharge', function(accounts) {
 
 
     it('should vote for Discharge', async function() {
-        await increaseTimeTo(annualGADate);
-        await discharge.startGeneralAssembly(0, {from: delegate});
-
         await discharge.proposeDischarge({from: delegate});
-
         await discharge.voteForDischarge(0, true, {from: newMember});
 
         const proposal = await discharge.getDischargeProposal(0);
@@ -114,9 +107,6 @@ contract('Discharge', function(accounts) {
     });
 
     it('should conclude vote for Discharge', async function() {
-        await increaseTimeTo(annualGADate);
-        await discharge.startGeneralAssembly(0, {from: delegate});
-
         await discharge.proposeDischarge({from: delegate});
         await discharge.voteForDischarge(0, true, {from: newMember});
 
@@ -124,9 +114,7 @@ contract('Discharge', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDischarge
-        await discharge.voteForDischarge(0, true, {from: newWhitelister1});
+        await discharge.concludeVoteForDischarge(0, {from: delegate});
 
         const proposal = await discharge.getDischargeProposal(0);
 

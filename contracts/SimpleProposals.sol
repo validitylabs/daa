@@ -44,9 +44,12 @@ contract SimpleProposals is Proposals {
         voteForProposal(SIMPLE_PROPOSAL, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalId) internal {
+    function concludeProposal(uint256 proposalId) public onlyMember {
+        super.concludeProposal(SIMPLE_PROPOSAL, proposalId);
+
         Proposal storage proposal = proposals[SIMPLE_PROPOSAL][proposalId];
         proposal.result = proposal.votesFor > proposal.votesAgainst;
+        proposal.concluded = true;
     }
 
 }

@@ -61,33 +61,13 @@ contract('Dissolution', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
+        await dissolution.concludeGeneralAssemblyVote(0, {from: delegate});
 
-        // after the voting time has expired => concludeGeneralAssemblyVote
-        await dissolution.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
-
-
-        // const proposal = await dissolution.getGADateProposal(0);
-        // proposal[8].should.equal(true); // concluded
-        // proposal[9].should.equal(true); // result
-
-        // const ga = await dissolution.getCurrentGA();
-        // console.log(ga[0].toString());
-        // console.log(ga[1].toString());
-        // console.log(ga[2]);
-
-        // await increaseTimeTo(gaDate);
-
-        // const finishGADate = gaDate + duration.days(10);
-        // await increaseTimeTo(finishGADate);
-
-        // await dissolution.finishCurrentGeneralAssembly({from: delegate});
-
+        await increaseTimeTo(gaDate);
+        await dissolution.startGeneralAssembly(0, {from: delegate});
     });
 
     it('should propose Dissolution', async function() {
-        await increaseTimeTo(gaDate);
-        await dissolution.startGeneralAssembly(0, {from: delegate});
-
         await dissolution.proposeDissolution(beneficiary, {from: newMember});
         const proposal = await dissolution.getDissolutionProposal(0);
         proposal[0].should.equal(newMember); // submitter
@@ -96,9 +76,6 @@ contract('Dissolution', function(accounts) {
     });
 
     it('should propose Dissolution (empty beneficiary account)', async function() {
-        await increaseTimeTo(gaDate);
-        await dissolution.startGeneralAssembly(0, {from: delegate});
-
         try {
             await dissolution.proposeDissolution(0x0, {from: newMember});
             assert.fail('should have thrown before');
@@ -108,9 +85,6 @@ contract('Dissolution', function(accounts) {
     });
 
     it('should propose Dissolution (from non-member)', async function() {
-        await increaseTimeTo(gaDate);
-        await dissolution.startGeneralAssembly(0, {from: delegate});
-
         try {
             await dissolution.proposeDissolution(beneficiary, {from: nonMember});
             assert.fail('should have thrown before');
@@ -120,8 +94,7 @@ contract('Dissolution', function(accounts) {
     });
 
     it('should propose Dissolution (not during GA)', async function() {
-        // await increaseTimeTo(gaDate);
-        // await dissolution.startGeneralAssembly(0, {from: delegate});
+        await dissolution.finishCurrentGeneralAssembly({from: delegate});
 
         try {
             await dissolution.proposeDissolution(beneficiary, {from: newMember});
@@ -133,11 +106,7 @@ contract('Dissolution', function(accounts) {
 
 
     it('should vote for Dissolution', async function() {
-        await increaseTimeTo(gaDate);
-        await dissolution.startGeneralAssembly(0, {from: delegate});
-
         await dissolution.proposeDissolution(beneficiary, {from: newMember});
-
         await dissolution.voteForDissolution(0, true, {from: newMember});
 
         const proposal = await dissolution.getDissolutionProposal(0);
@@ -149,9 +118,6 @@ contract('Dissolution', function(accounts) {
     });
 
     it('should conclude vote for Dissolution (result true)', async function() {
-        await increaseTimeTo(gaDate);
-        await dissolution.startGeneralAssembly(0, {from: delegate});
-
         const startContractBalance = await web3.eth.getBalance(dissolution.address);
         const startBeneficiaryBalance = await web3.eth.getBalance(beneficiary);
 
@@ -168,9 +134,7 @@ contract('Dissolution', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDissolution
-        await dissolution.voteForDissolution(0, true, {from: newWhitelister2});
+        await dissolution.concludeVoteForDissolution(0, {from: delegate});
 
         // then selfdestruct(proposal.destinationAddress); in the contract
 
@@ -191,9 +155,6 @@ contract('Dissolution', function(accounts) {
 
 
     it('should conclude vote for Dissolution (result false)', async function() {
-        await increaseTimeTo(gaDate);
-        await dissolution.startGeneralAssembly(0, {from: delegate});
-
         await dissolution.proposeDissolution(beneficiary, {from: newMember});
         await dissolution.voteForDissolution(0, true, {from: newMember});
 
@@ -206,9 +167,7 @@ contract('Dissolution', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeVoteForDissolution
-        await dissolution.voteForDissolution(0, true, {from: newWhitelister2});
+        await dissolution.concludeVoteForDissolution(0, {from: delegate});
 
         const proposal = await dissolution.getDissolutionProposal(0);
         proposal[8].should.equal(true); // concluded

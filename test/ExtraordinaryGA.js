@@ -84,9 +84,7 @@ contract('ExtraordinaryGA', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeGeneralAssemblyVote
-        await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
+        await extraordinaryGA.concludeGeneralAssemblyVote(0, {from: delegate});
 
         const proposal = await extraordinaryGA.getGADateProposal(0);
 
@@ -138,16 +136,12 @@ contract('ExtraordinaryGA', function(accounts) {
         const afterEndTime = endTime + duration.seconds(1);
 
         await increaseTimeTo(afterEndTime);
-
-        // after the voting time has expired => concludeGeneralAssemblyVote
-        await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newWhitelister1});
-
+        await extraordinaryGA.concludeGeneralAssemblyVote(0, {from: delegate});
 
         const finishGADate = date + duration.days(10);
         await increaseTimeTo(finishGADate);
 
         await extraordinaryGA.finishCurrentGeneralAssembly({from: delegate});
-
 
         date = finishGADate + duration.days(273); // NINE_MONTHS = 274 days;
         try {
@@ -159,6 +153,5 @@ contract('ExtraordinaryGA', function(accounts) {
             assertJump(error);
         }
     });
-
 
 });

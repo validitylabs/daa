@@ -34,16 +34,8 @@ contract Dissolution is ExtraordinaryGA {
         super.voteForProposal(DISSOLUTION, proposalId, favor);
     }
 
-    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
-        if (proposalType == DISSOLUTION) {
-            concludeVoteForDissolution(proposalId);
-        } else if (proposalType == GENERAL_ASSEMBLY) {
-            concludeGeneralAssemblyVote(proposalId);
-        }
-    }
-
-    function concludeVoteForDissolution(uint256 proposalId) private {
-        // require(proposalId < proposals[DISSOLUTION].length);
+    function concludeVoteForDissolution(uint256 proposalId) public onlyMember {
+        super.concludeProposal(DISSOLUTION, proposalId);
 
         // ⅔ of all existing members have to vote “yes”
         // for * 3 >= (all members) * 2
@@ -51,6 +43,7 @@ contract Dissolution is ExtraordinaryGA {
         bool res = proposal.votesFor.mul(uint256(3)) >= getAllMembersCount().mul(uint256(2));
 
         proposal.result = res;
+        proposal.concluded = true;
         if (res) {
             selfdestruct(proposal.destinationAddress);
         }

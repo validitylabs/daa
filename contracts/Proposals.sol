@@ -78,12 +78,6 @@ contract Proposals is Membership {
         proposal.duration = proposal.duration.add(time);
     }
 
-    function concludeProposal(uint256 proposalId) internal;
-
-    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
-        concludeProposal(proposalId);
-    }
-
     // submitter can vote for proposal
     function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor)
         internal onlyMember returns (bool)
@@ -101,10 +95,15 @@ contract Proposals is Membership {
             }
             return true;
         } else {
-            proposal.concluded = true;
-            concludeProposal(proposalType, proposalId);
             return false;
         }
+    }
+
+    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
+        require(proposalId < proposals[proposalType].length);
+
+        Proposal storage proposal = proposals[proposalType][proposalId];
+        require(now > proposal.startTime.add(proposal.duration));
     }
 
     function getProposal(uint256 proposalType, uint256 proposalId) internal constant returns (

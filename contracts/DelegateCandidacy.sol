@@ -53,11 +53,24 @@ contract DelegateCandidacy is ExtraordinaryGA {
         }
     }
 
-    function concludeProposal(uint256 proposalType, uint256 proposalId) internal {
-        if (proposalType == DELEGATE_CANDIDACY) {
-            concludeVoteForDelegate(proposalId);
-        } else if (proposalType == GENERAL_ASSEMBLY) {
-            concludeGeneralAssemblyVote(proposalId);
+    function concludeVoteForDelegate(uint256 proposalId) public onlyMember {
+        super.concludeProposal(DELEGATE_CANDIDACY, proposalId);
+
+        // TODO: Candidate with most votes in favor is new candidate
+        // If 2 or more candidates have same and most number of votes, re-vote on only those
+        var (date, started, finished, annual) = getCurrentGA();
+
+        Proposal storage proposal = proposals[DELEGATE_CANDIDACY][proposalId];
+        concluded[date].push(
+                Conclusion(proposalId, proposal.destinationAddress, proposal.votesFor)
+        );
+
+        // ! proposal.result = res;
+        proposal.concluded = true;
+
+        // wait the latest voting
+        if (finished > 0 && latestProposal[date] == proposalId) {
+            calculateVotes();
         }
     }
 
@@ -119,22 +132,6 @@ contract DelegateCandidacy is ExtraordinaryGA {
             }
         } else {
             // TODO:
-        }
-    }
-
-    function concludeVoteForDelegate(uint256 proposalId) private {
-        // TODO: Candidate with most votes in favor is new candidate
-        // If 2 or more candidates have same and most number of votes, re-vote on only those
-        var (date, started, finished, annual) = getCurrentGA();
-
-        Proposal storage proposal = proposals[DELEGATE_CANDIDACY][proposalId];
-        concluded[date].push(
-                Conclusion(proposalId, proposal.destinationAddress, proposal.votesFor)
-        );
-
-        // wait the latest voting
-        if (finished > 0 && latestProposal[date] == proposalId) {
-            calculateVotes();
         }
     }
 
