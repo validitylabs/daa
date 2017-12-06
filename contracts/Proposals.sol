@@ -79,23 +79,17 @@ contract Proposals is Membership {
     }
 
     // submitter can vote for proposal
-    function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor)
-        internal onlyMember returns (bool)
-    {
+    function voteForProposal(uint256 proposalType, uint256 proposalId, bool favor) internal onlyMember {
         Proposal storage proposal = proposals[proposalType][proposalId];
         require(!proposal.concluded);
         require(!proposal.voted[msg.sender]);
 
-        if (now < proposal.startTime.add(proposal.duration)) {
-            proposal.voted[msg.sender] = true;
-            if (favor) {
-                proposal.votesFor = proposal.votesFor.add(1);
-            } else {
-                proposal.votesAgainst = proposal.votesAgainst.add(1);
-            }
-            return true;
+        require(now < proposal.startTime.add(proposal.duration));
+        proposal.voted[msg.sender] = true;
+        if (favor) {
+            proposal.votesFor = proposal.votesFor.add(1);
         } else {
-            return false;
+            proposal.votesAgainst = proposal.votesAgainst.add(1);
         }
     }
 
@@ -103,6 +97,7 @@ contract Proposals is Membership {
         require(proposalId < proposals[proposalType].length);
 
         Proposal storage proposal = proposals[proposalType][proposalId];
+        require(!proposal.concluded);
         require(now > proposal.startTime.add(proposal.duration));
     }
 

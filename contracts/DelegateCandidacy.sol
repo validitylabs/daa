@@ -48,9 +48,8 @@ contract DelegateCandidacy is ExtraordinaryGA {
         uint256 date = getCurrentGADate();
         require(!voted[date][msg.sender]);
 
-        if (super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true)) {
-            voted[date][msg.sender] = true;
-        }
+        super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true);
+        voted[date][msg.sender] = true;
     }
 
     function concludeVoteForDelegate(uint256 proposalId) public onlyMember {
@@ -58,42 +57,33 @@ contract DelegateCandidacy is ExtraordinaryGA {
 
         // TODO: Candidate with most votes in favor is new candidate
         // If 2 or more candidates have same and most number of votes, re-vote on only those
-        var (date, started, finished, annual) = getCurrentGA();
+        uint256 date = getCurrentGADate();
 
         Proposal storage proposal = proposals[DELEGATE_CANDIDACY][proposalId];
-        concluded[date].push(
-                Conclusion(proposalId, proposal.destinationAddress, proposal.votesFor)
-        );
+        concluded[date].push(Conclusion(
+            proposalId,
+            proposal.destinationAddress,
+            proposal.votesFor
+        ));
 
         // ! proposal.result = res;
         proposal.concluded = true;
+    }
+
+    function calculateAllVotesForDelegate() public onlyMember {
+        var (date, started, finished, annual) = getCurrentGA();
+        require(finished > 0);
 
         // wait the latest voting
-        if (finished > 0 && latestProposal[date] == proposalId) {
-            calculateVotes();
-        }
-    }
+        uint256 proposalId = latestProposal[date];
+        Proposal storage proposal = proposals[DELEGATE_CANDIDACY][proposalId];
+        require(proposal.concluded);
 
-    function proposeDelegateCandidacy(address candidate) private {
-        uint256 proposalId = super.submitProposal(
-            DELEGATE_CANDIDACY,
-            "Propose Delegate Candidacy",
-            0,
-            candidate, // address(0),
-            voteTime
-        );
-
-        latestProposal[getCurrentGADate()] = proposalId;
-    }
-
-    function calculateVotes() private {
-        uint256 date = getCurrentGADate();
         Conclusion[] storage concl = concluded[date];
 
         uint256 maxVotes = 0;
         uint256 count = 0;
-
-        uint256[] indexArray; // TODO:
+        uint256[] indexArray;
 
         uint256 i;
         for (i = 0; i < concl.length; i++) {
@@ -117,22 +107,40 @@ contract DelegateCandidacy is ExtraordinaryGA {
 
         if (maxVotes > 0) {
             if (count == 1) {
-                address newDelegate = concl[index].candidate;
+                address newDelegate = concl[indexArray[0]].candidate;
                 setDelegate(newDelegate);
             } else {
                 // re-vote
                 // TODO:
-                delete concluded[date][0];
-                delete concluded[date][1];
-                // delete voted[date]; // TODO:
+                // delete voted[date];
+
                 for (i = 0; i < count; i++) {
-                    uint256 index = indexArray[i];
-                    proposeDelegateCandidacy(concl[index].candidate);
+                    proposeDelegateCandidacy(concl[indexArray[i]].candidate);
+                }
+
+                for (i = 0; i < concl.length; i++) {
+                    delete concluded[date][i];
                 }
             }
         } else {
             // TODO:
+            // all votes are 0
         }
     }
+
+    function proposeDelegateCandidacy(address candidate) private {
+        require(candidate != address(0));
+
+        uint256 proposalId = super.submitProposal(
+            DELEGATE_CANDIDACY,
+            "Propose Delegate Candidacy",
+            0,
+            candidate, // address(0),
+            voteTime
+        );
+
+        latestProposal[getCurrentGADate()] = proposalId;
+    }
+
 
 }
