@@ -94,9 +94,7 @@ contract('Membership', function(accounts) {
         const other = newMember;
 
         try {
-            await membership.addWhitelister(newWhitelister1, {
-                from: other
-              });
+            await membership.addWhitelister(newWhitelister1, {from: other});
               assert.fail('should have thrown before');
             } catch (error) {
               assertJump(error);
@@ -107,9 +105,7 @@ contract('Membership', function(accounts) {
         const delegateMember = await membership.getMember(delegate);
         delegateMember[0].should.be.bignumber.equal(DELEGATE);
 
-        await membership.addWhitelister(newWhitelister1, {
-            from: delegate
-        });
+        await membership.addWhitelister(newWhitelister1, {from: delegate});
 
         const count = await membership.getAllMembersCount();
         count.should.be.bignumber.equal(2); // delegate + whitelister
@@ -124,9 +120,7 @@ contract('Membership', function(accounts) {
         const other = newMember;
 
         try {
-            await membership.removeWhitelister(newWhitelister1, {
-                from: other
-              });
+            await membership.removeWhitelister(newWhitelister1, {from: other});
               assert.fail('should have thrown before');
           } catch (error) {
               assertJump(error);
@@ -143,9 +137,7 @@ contract('Membership', function(accounts) {
         nonWhitelisterMember[0].should.be.bignumber.equal(NOT_MEMBER); // TODO: not equal WHITELISTER
 
         try {
-            await membership.removeWhitelister(nonWhitelister, {
-                from: delegate
-            });
+            await membership.removeWhitelister(nonWhitelister, {from: delegate});
             assert.fail('should have thrown before');
         } catch (error) {
             assertJump(error);
@@ -234,9 +226,15 @@ contract('Membership', function(accounts) {
 
 
     it('should leave DAA (delegate)', async function() {
-        // TODO:
-        // For delegate that should only be possible when also proposing new GA date
+        const delegateMember = await membership.getMember(delegate);
+        delegateMember[0].should.be.bignumber.equal(DELEGATE);
 
+        try {
+            await membership.leaveDAA({from: delegate});
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
     });
 
 

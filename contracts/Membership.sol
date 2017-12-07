@@ -87,10 +87,12 @@ contract Membership {
         }
     }
 
-    function leaveDAA() public {
-        if (members[msg.sender].memberType == MemberTypes.DELEGATE) {
-            // TODO: For delegate that should only be possible when also proposing new GA date
-        }
+    function leaveDAA() public { // onlyMember ?
+        // For delegate that should only be possible when also proposing new GA date
+        // use stepDownAndProposeGA
+        require(members[msg.sender].memberType != MemberTypes.DELEGATE);
+        // if (members[msg.sender].memberType == MemberTypes.DELEGATE) {
+        // }
 
         removeMember(msg.sender);
     }
