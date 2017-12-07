@@ -71,7 +71,7 @@ contract DelegateCandidacy is ExtraordinaryGA {
     }
 
     function calculateAllVotesForDelegate() public onlyMember {
-        var (date, started, finished, annual) = getCurrentGA();
+        var (date, started, finished, annual, stepDown) = getCurrentGA();
         require(finished > 0);
 
         // wait the latest voting

@@ -60,6 +60,7 @@ contract('Discharge', function(accounts) {
         latestAddedGA[1].should.be.bignumber.equal(0); // started
         latestAddedGA[2].should.be.bignumber.equal(0); // finished
         latestAddedGA[3].should.equal(true); // annual
+        latestAddedGA[4].should.equal(false); // stepDown
         */
 
         await increaseTimeTo(annualGADate);

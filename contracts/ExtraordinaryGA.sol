@@ -11,6 +11,7 @@ contract ExtraordinaryGA is Proposals {
         uint256 started;
         uint256 finished;
         bool annual;
+        bool stepDown;
     }
 
     uint256 private constant voteTime = 14 days;
@@ -20,12 +21,12 @@ contract ExtraordinaryGA is Proposals {
     GA[] public generalAssemblies;
     uint256 current; // TODO: Setter
 
-    mapping (uint256 => uint256) datesForVoting;
+    mapping (uint256 => GA) datesForVoting; // uint256 => uint256
     mapping (address => bool) proposalMade;
 
     function ExtraordinaryGA() {
         // current = 0;
-        // generalAssemblies.push(GA(0, 0, 0, false));
+        // generalAssemblies.push(GA(0, 0, 0, false, false));
     }
 
     // TODO:
@@ -60,31 +61,34 @@ contract ExtraordinaryGA is Proposals {
         return getProposal(GENERAL_ASSEMBLY, proposalId);
     }
 
-    // TODO: datesForVoting as public?
     function getDateForVoting(uint256 proposalId) public constant returns (uint256) {
-        return datesForVoting[proposalId];
+        return datesForVoting[proposalId].date;
     }
 
     function getLatestAddedGA() public constant returns (
         uint256,
         uint256,
         uint256,
+        bool,
         bool
     )
     {
         GA storage latestAddedGA = generalAssemblies[generalAssemblies.length - 1];
-        return (latestAddedGA.date, latestAddedGA.started, latestAddedGA.finished, latestAddedGA.annual);
+        return (latestAddedGA.date, latestAddedGA.started, latestAddedGA.finished,
+            latestAddedGA.annual, latestAddedGA.stepDown);
     }
 
     function getCurrentGA() public constant returns (
         uint256,
         uint256,
         uint256,
+        bool,
         bool
     )
     {
         GA storage currentGA = generalAssemblies[current];
-        return (currentGA.date, currentGA.started, currentGA.finished, currentGA.annual);
+        return (currentGA.date, currentGA.started, currentGA.finished,
+            currentGA.annual, currentGA.stepDown);
     }
 
     function getCurrentGADate() public constant returns (uint256) {
@@ -93,15 +97,7 @@ contract ExtraordinaryGA is Proposals {
     }
 
     function proposeGeneralAssemblyDate(uint256 date) public onlyMember {
-        // only one proposal for a general assembly can be made per user at any time
-        require(!proposalMade[msg.sender]);
-        // proposal has to be at least in the future by at least one voting duration
-        require(date > now.add(voteTime));
-
-        uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
-            "Propose General Assembly Date", 0, address(0), voteTime);
-        proposalMade[msg.sender] = true;
-        datesForVoting[proposalId] = date;
+        proposeGeneralAssemblyDate(date, false);
     }
 
     function voteForGeneralAssemblyDate(uint256 proposalId, bool favor) public onlyMember {
@@ -115,7 +111,7 @@ contract ExtraordinaryGA is Proposals {
         require(generalAssemblies.length == 0 ||
             date > generalAssemblies[current].finished.add(NINE_MONTHS));
 
-        generalAssemblies.push(GA(date, 0, 0, true));
+        generalAssemblies.push(GA(date, 0, 0, true, false));
         // current = generalAssemblies.length - 1;
     }
 
@@ -140,11 +136,15 @@ contract ExtraordinaryGA is Proposals {
     }
 
     function stepDownAndProposeGA(uint256 date) public onlyDelegate {
-        // TODO:
         // Even if members vote against GA, the DAA remains active, it just doesnt have a delegate
         // After stepping down until new delegate is elected we do not allow payouts,
         // all other functions remain active. This is required because
         // the GAA is legally not having rights to do business during this period.
+
+        if (proposalMade[msg.sender]) {
+            proposalMade[msg.sender] = false;
+        }
+        proposeGeneralAssemblyDate(date, true);
     }
 
     function concludeGeneralAssemblyVote(uint256 proposalId) public onlyMember {
@@ -157,11 +157,30 @@ contract ExtraordinaryGA is Proposals {
 
         proposal.result = res;
         proposal.concluded = true;
+
+        if (datesForVoting[proposalId].stepDown) {
+            removeDelegate();
+        }
+
         if (res) {
-            uint256 date = datesForVoting[proposalId];
-            generalAssemblies.push(GA(date, 0, 0, false));
+            // uint256 date = datesForVoting[proposalId];
+            generalAssemblies.push(datesForVoting[proposalId]); // GA(date, 0, 0, false, false));
             // current = generalAssemblies.length - 1;
         }
     }
+
+    function proposeGeneralAssemblyDate(uint256 date, bool stepDown) private {
+        // only one proposal for a general assembly can be made per user at any time
+        require(!proposalMade[msg.sender]);
+        // proposal has to be at least in the future by at least one voting duration
+        require(date > now.add(voteTime));
+
+        uint256 proposalId = super.submitProposal(GENERAL_ASSEMBLY,
+            "Propose General Assembly Date", 0, address(0), voteTime);
+        proposalMade[msg.sender] = true;
+
+        datesForVoting[proposalId] = GA(date, 0, 0, false, stepDown);
+    }
+
 
 }

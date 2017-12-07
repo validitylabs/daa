@@ -76,7 +76,7 @@ contract Membership {
 
     function removeWhitelister(address addrs) public onlyDelegate {
         require(members[addrs].memberType == MemberTypes.WHITELISTER);
-        delete members[addrs];
+        removeMember(addrs);
     }
 
     function payMembership() public payable {
@@ -92,8 +92,7 @@ contract Membership {
             // TODO: For delegate that should only be possible when also proposing new GA date
         }
 
-        delete members[msg.sender];
-        allMembers = allMembers.sub(1);
+        removeMember(msg.sender);
     }
 
     function getAllMembersCount() public constant returns (uint256) {
@@ -112,20 +111,36 @@ contract Membership {
         return (memberType, whitelisted, paid);
     }
 
+    // TODO: ?
     function removeMemberThatDidntPay(address addrs) internal {
-        delete members[addrs];
+        removeMember(addrs);
     }
 
     function setDelegate(address newDelegate) internal {
+        require(newDelegate != address(0));
         require(delegate != newDelegate);
 
-        // TODO:
+        // TODO: or removeMember?
         members[delegate].memberType = MemberTypes.EXISTING_MEMBER;
         // members[delegate].whitelisted = 2;
         // members[delegate].paid = true;
 
         delegate = newDelegate;
         members[newDelegate].memberType = MemberTypes.DELEGATE;
+    }
+
+    function removeDelegate() internal {
+        require(delegate != address(0));
+        // TODO: or removeMember?
+        members[delegate].memberType = MemberTypes.EXISTING_MEMBER;
+    }
+
+    function removeMember(address addrs) internal {
+        require(addrs != address(0));
+        if (members[addrs].memberType != MemberTypes.NOT_MEMBER) {
+            allMembers = allMembers.sub(1);
+        }
+        delete members[addrs];
     }
 
     function concludeJoining(address addrs) private {

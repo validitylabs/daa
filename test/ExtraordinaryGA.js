@@ -96,6 +96,7 @@ contract('ExtraordinaryGA', function(accounts) {
         latestAddedGA[1].should.be.bignumber.equal(0); // started
         latestAddedGA[2].should.be.bignumber.equal(0); // finished
         latestAddedGA[3].should.equal(false); // annual
+        latestAddedGA[4].should.equal(false); // stepDown
     });
 
 
@@ -107,9 +108,10 @@ contract('ExtraordinaryGA', function(accounts) {
         latestAddedGA[1].should.be.bignumber.equal(0); // started
         latestAddedGA[2].should.be.bignumber.equal(0); // finished
         latestAddedGA[3].should.equal(true); // annual
+        latestAddedGA[4].should.equal(false); // stepDown
     });
 
-    it('should set Annual Assembly date from non-delegate', async function() {
+    it('should set Annual Assembly date (from non-delegate)', async function() {
         try {
             await extraordinaryGA.setAnnualAssemblyDate(date, {from: newMember});
             assert.fail('should have thrown before');
@@ -148,6 +150,45 @@ contract('ExtraordinaryGA', function(accounts) {
             await extraordinaryGA.setAnnualAssemblyDate(date, {
                 from: delegate
             });
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
+    });
+
+    it('should step down and propose GA', async function() {
+        let member = await extraordinaryGA.getMember(delegate);
+        member[0].should.be.bignumber.equal(2); // DELEGATE = 2;
+
+        await extraordinaryGA.stepDownAndProposeGA(date, {from: delegate});
+
+        await extraordinaryGA.voteForGeneralAssemblyDate(0, true, {from: newMember});
+
+        const endTime =   latestTime() + prDuration;
+        const afterEndTime = endTime + duration.seconds(1);
+
+        await increaseTimeTo(afterEndTime);
+        await extraordinaryGA.concludeGeneralAssemblyVote(0, {from: delegate});
+
+        const proposal = await extraordinaryGA.getGADateProposal(0);
+
+        proposal[8].should.equal(true); // concluded
+        proposal[9].should.equal(true); // result
+
+        const latestAddedGA = await extraordinaryGA.getLatestAddedGA();
+        latestAddedGA[0].should.be.bignumber.equal(date);
+        latestAddedGA[1].should.be.bignumber.equal(0); // started
+        latestAddedGA[2].should.be.bignumber.equal(0); // finished
+        latestAddedGA[3].should.equal(false); // annual
+        latestAddedGA[4].should.equal(true); // stepDown
+
+        member = await extraordinaryGA.getMember(delegate);
+        member[0].should.be.bignumber.equal(1); // EXISTING_MEMBER = 1;
+    });
+
+    it('should step down and propose GA (from non-delegate)', async function() {
+        try {
+            await extraordinaryGA.stepDownAndProposeGA(date, {from: newMember});
             assert.fail('should have thrown before');
         } catch (error) {
             assertJump(error);
