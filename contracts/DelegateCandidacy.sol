@@ -15,7 +15,7 @@ contract DelegateCandidacy is ExtraordinaryGA {
     // by date
     mapping(uint256 => uint256) latestProposal;
     // by date
-    mapping (uint256 => mapping(address => bool)) voted;
+    mapping (uint256 => address[]) voted;
     // by date
     mapping(uint256 => Conclusion[]) concluded;
 
@@ -46,10 +46,10 @@ contract DelegateCandidacy is ExtraordinaryGA {
     function voteForDelegate(uint256 proposalId) public onlyMember {
         // Any member can vote for exactly one candidate (or not vote at all)
         uint256 date = getCurrentGADate();
-        require(!voted[date][msg.sender]);
+        require(!isVoted(date, msg.sender));
 
         super.voteForProposal(DELEGATE_CANDIDACY, proposalId, true);
-        voted[date][msg.sender] = true;
+        voted[date].push(msg.sender);
     }
 
     function concludeVoteForDelegate(uint256 proposalId) public onlyMember {
@@ -111,8 +111,10 @@ contract DelegateCandidacy is ExtraordinaryGA {
                 setDelegate(newDelegate);
             } else {
                 // re-vote
-                // TODO:
-                // delete voted[date];
+
+                for (i = 0; i < voted[date].length; i++) {
+                    delete voted[date][i];
+                }
 
                 for (i = 0; i < count; i++) {
                     proposeDelegateCandidacy(concl[indexArray[i]].candidate);
@@ -126,6 +128,16 @@ contract DelegateCandidacy is ExtraordinaryGA {
             // TODO:
             // all votes are 0
         }
+    }
+
+    function isVoted(uint256 date, address addrs) private constant returns (bool) {
+        require(addrs != address(0));
+        for (uint256 i = 0; i < voted[date].length; i++) {
+            if (voted[date][i] == addrs) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function proposeDelegateCandidacy(address candidate) private {

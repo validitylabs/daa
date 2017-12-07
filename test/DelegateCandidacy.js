@@ -108,6 +108,18 @@ contract('DelegateCandidacy', function(accounts) {
         // proposal[8].should.equal(false); // concluded
     });
 
+    it('should vote for Delegate Candidacy (twice from one account)', async function() {
+        await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
+        await delegateCandidacy.voteForDelegate(0, {from: delegate});
+
+        try {
+            await delegateCandidacy.voteForDelegate(0, {from: delegate});
+            assert.fail('should have thrown before');
+        } catch (error) {
+            assertJump(error);
+        }
+    });
+
     it('should vote for Delegate Candidacy (1 member votes for 2 candidates)', async function() {
         await delegateCandidacy.proposeDelegateCandidacy({from: newMember});
         await delegateCandidacy.proposeDelegateCandidacy({from: newWhitelister1});
@@ -230,6 +242,9 @@ contract('DelegateCandidacy', function(accounts) {
 
         await delegateCandidacy.voteForDelegate(2, {from: newWhitelister1});
         await delegateCandidacy.voteForDelegate(2, {from: delegate});
+        await delegateCandidacy.voteForDelegate(2, {from: newMember});
+
+        await delegateCandidacy.voteForDelegate(3, {from: newWhitelister2});
 
         endTime =   latestTime() + duration.minutes(10); // voteTime = 10 minutes;
         afterEndTime = endTime + duration.seconds(1);
@@ -240,12 +255,12 @@ contract('DelegateCandidacy', function(accounts) {
 
 
         proposal2 = await delegateCandidacy.getDelegateCandidacyProposal(2);
-        proposal2[6].should.be.bignumber.equal(2); // votesFor
+        proposal2[6].should.be.bignumber.equal(3); // votesFor
         proposal2[8].should.equal(true); // concluded
         proposal2[9].should.equal(false); // ! result
 
         const proposal3 = await delegateCandidacy.getDelegateCandidacyProposal(3);
-        proposal3[6].should.be.bignumber.equal(0); // votesFor
+        proposal3[6].should.be.bignumber.equal(1); // votesFor
         proposal3[8].should.equal(true); // concluded
         proposal3[9].should.equal(false); // ! result
 
