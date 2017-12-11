@@ -17,13 +17,15 @@ contract('ExpelMember', function(accounts) {
 
     let expelMember;
 
+    const membershipFee = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+
     const delegate = accounts[0];
     const newMember = accounts[2];
     const newWhitelister1 = accounts[3];
     const newWhitelister2 = accounts[4];
 
     // const name = "test";
-    const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
+    // const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     // const destinationAddress = accounts[5];
 
     // const extendedDuration = 120; // 2 mins in seconds
@@ -39,17 +41,17 @@ contract('ExpelMember', function(accounts) {
     });
 
     beforeEach(async function() {
-        expelMember = await ExpelMember.new();
+        expelMember = await ExpelMember.new(membershipFee, newWhitelister1, newWhitelister2);
 
         await expelMember.requestMembership({from: newMember});
 
-        await expelMember.addWhitelister(newWhitelister1, {from: delegate});
-        await expelMember.addWhitelister(newWhitelister2, {from: delegate});
+        // await expelMember.addWhitelister(newWhitelister1, {from: delegate});
+        // await expelMember.addWhitelister(newWhitelister2, {from: delegate});
 
         await expelMember.whitelistMember(newMember, {from: newWhitelister1});
         await expelMember.whitelistMember(newMember, {from: newWhitelister2});
 
-        await expelMember.payMembership({from: newMember, value: amount});
+        await expelMember.payMembership({from: newMember, value: membershipFee});
 
 
         await expelMember.requestMembership({from: memberToExpel});
@@ -57,7 +59,7 @@ contract('ExpelMember', function(accounts) {
         await expelMember.whitelistMember(memberToExpel, {from: newWhitelister1});
         await expelMember.whitelistMember(memberToExpel, {from: newWhitelister2});
 
-        await expelMember.payMembership({from: memberToExpel, value: amount});
+        await expelMember.payMembership({from: memberToExpel, value: membershipFee});
 
     });
 

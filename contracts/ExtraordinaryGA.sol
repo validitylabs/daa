@@ -24,9 +24,9 @@ contract ExtraordinaryGA is Proposals {
     mapping (uint256 => GA) datesForVoting; // uint256 => uint256
     mapping (address => bool) proposalMade;
 
-    function ExtraordinaryGA() {
-        // current = 0;
-        // generalAssemblies.push(GA(0, 0, 0, false, false));
+    function ExtraordinaryGA(uint256 _fee, address _whitelister1, address _whitelister2)
+        Proposals(_fee, _whitelister1, _whitelister2) {
+
     }
 
     // TODO:
@@ -169,7 +169,7 @@ contract ExtraordinaryGA is Proposals {
         }
     }
 
-    function proposeGeneralAssemblyDate(uint256 date, bool stepDown) private {
+    function proposeGeneralAssemblyDate(uint256 date, bool stepDown) private onlyMember {
         // only one proposal for a general assembly can be made per user at any time
         require(!proposalMade[msg.sender]);
         // proposal has to be at least in the future by at least one voting duration

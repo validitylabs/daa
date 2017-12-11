@@ -18,13 +18,15 @@ contract('ExtraordinaryGA', function(accounts) {
     let extraordinaryGA;
     let date;
 
+    const membershipFee = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+
     const delegate = accounts[0];
     const newMember = accounts[2];
     const newWhitelister1 = accounts[3];
     const newWhitelister2 = accounts[4];
 
     // const name = "test";
-    const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
+    // const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     // const destinationAddress = accounts[5];
     const prDuration = duration.days(14);
     // const extendedDuration = 120; // 2 mins in seconds
@@ -37,19 +39,19 @@ contract('ExtraordinaryGA', function(accounts) {
     });
 
     beforeEach(async function() {
-        extraordinaryGA = await ExtraordinaryGA.new();
+        extraordinaryGA = await ExtraordinaryGA.new(membershipFee, newWhitelister1, newWhitelister2);
 
         date = latestTime() + duration.weeks(7);
 
         await extraordinaryGA.requestMembership({from: newMember});
 
-        await extraordinaryGA.addWhitelister(newWhitelister1, {from: delegate});
-        await extraordinaryGA.addWhitelister(newWhitelister2, {from: delegate});
+        // await extraordinaryGA.addWhitelister(newWhitelister1, {from: delegate});
+        // await extraordinaryGA.addWhitelister(newWhitelister2, {from: delegate});
 
         await extraordinaryGA.whitelistMember(newMember, {from: newWhitelister1});
         await extraordinaryGA.whitelistMember(newMember, {from: newWhitelister2});
 
-        await extraordinaryGA.payMembership({from: newMember, value: amount});
+        await extraordinaryGA.payMembership({from: newMember, value: membershipFee});
     });
 
     it('should propose General Assembly date', async function() {

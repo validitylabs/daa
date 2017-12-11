@@ -21,6 +21,11 @@ contract DelegateCandidacy is ExtraordinaryGA {
 
     uint256 private constant voteTime = 10 minutes;
 
+    function DelegateCandidacy(uint256 _fee, address _whitelister1, address _whitelister2)
+        ExtraordinaryGA(_fee, _whitelister1, _whitelister2) {
+
+    }
+
     // Proposal has to be readable by external SC
     function getDelegateCandidacyProposal(uint256 proposalId) external constant returns (
         address submitter,
@@ -55,7 +60,7 @@ contract DelegateCandidacy is ExtraordinaryGA {
     function concludeVoteForDelegate(uint256 proposalId) public onlyMember {
         super.concludeProposal(DELEGATE_CANDIDACY, proposalId);
 
-        // TODO: Candidate with most votes in favor is new candidate
+        // Candidate with most votes in favor is new candidate
         // If 2 or more candidates have same and most number of votes, re-vote on only those
         uint256 date = getCurrentGADate();
 
@@ -90,7 +95,6 @@ contract DelegateCandidacy is ExtraordinaryGA {
             if (concl[i].votesFor > maxVotes) {
                 maxVotes = concl[i].votesFor;
                 count = 0;
-
                 // https://ethereum.stackexchange.com/a/3377
                 if (count == indexArray.length) {
                     indexArray.length += 1;
@@ -105,28 +109,22 @@ contract DelegateCandidacy is ExtraordinaryGA {
             }
         }
 
-        if (maxVotes > 0) {
-            if (count == 1) {
-                address newDelegate = concl[indexArray[0]].candidate;
-                setDelegate(newDelegate);
-            } else {
-                // re-vote
-
-                for (i = 0; i < voted[date].length; i++) {
-                    delete voted[date][i];
-                }
-
-                for (i = 0; i < count; i++) {
-                    proposeDelegateCandidacy(concl[indexArray[i]].candidate);
-                }
-
-                for (i = 0; i < concl.length; i++) {
-                    delete concluded[date][i];
-                }
-            }
+        if (count == 1 && maxVotes > 0) {
+            address newDelegate = concl[indexArray[0]].candidate;
+            setDelegate(newDelegate);
         } else {
-            // TODO:
-            // all votes are 0
+            // re-vote
+            for (i = 0; i < voted[date].length; i++) {
+                delete voted[date][i];
+            }
+
+            for (i = 0; i < count; i++) {
+                proposeDelegateCandidacy(concl[indexArray[i]].candidate);
+            }
+
+            for (i = 0; i < concl.length; i++) {
+                delete concluded[date][i];
+            }
         }
     }
 
@@ -140,7 +138,7 @@ contract DelegateCandidacy is ExtraordinaryGA {
         return false;
     }
 
-    function proposeDelegateCandidacy(address candidate) private {
+    function proposeDelegateCandidacy(address candidate) private onlyMember {
         require(candidate != address(0));
 
         uint256 proposalId = super.submitProposal(

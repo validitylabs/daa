@@ -18,13 +18,15 @@ contract('Dissolution', function(accounts) {
     let dissolution;
     let gaDate;
 
+    const membershipFee = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+
     const delegate = accounts[0];
     const newMember = accounts[2];
     const newWhitelister1 = accounts[3];
     const newWhitelister2 = accounts[4];
 
     // const name = "test";
-    const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
+    // const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     // const destinationAddress = accounts[5];
     const prGADuration = duration.days(14);
     // const extendedDuration = 120; // 2 mins in seconds
@@ -40,17 +42,17 @@ contract('Dissolution', function(accounts) {
     });
 
     beforeEach(async function() {
-        dissolution = await Dissolution.new();
+        dissolution = await Dissolution.new(membershipFee, newWhitelister1, newWhitelister2);
 
         await dissolution.requestMembership({from: newMember});
 
-        await dissolution.addWhitelister(newWhitelister1, {from: delegate});
-        await dissolution.addWhitelister(newWhitelister2, {from: delegate});
+        // await dissolution.addWhitelister(newWhitelister1, {from: delegate});
+        // await dissolution.addWhitelister(newWhitelister2, {from: delegate});
 
         await dissolution.whitelistMember(newMember, {from: newWhitelister1});
         await dissolution.whitelistMember(newMember, {from: newWhitelister2});
 
-        await dissolution.payMembership({from: newMember, value: amount});
+        await dissolution.payMembership({from: newMember, value: membershipFee});
 
 
         gaDate = latestTime() + duration.weeks(10);

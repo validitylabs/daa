@@ -18,13 +18,15 @@ contract('Discharge', function(accounts) {
     let discharge;
     let annualGADate;
 
+    const membershipFee = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+
     const delegate = accounts[0];
     const newMember = accounts[2];
     const newWhitelister1 = accounts[3];
     const newWhitelister2 = accounts[4];
 
     // const name = "test";
-    const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
+    // const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     // const destinationAddress = accounts[5];
 
     // const extendedDuration = 120; // 2 mins in seconds
@@ -38,17 +40,17 @@ contract('Discharge', function(accounts) {
     });
 
     beforeEach(async function() {
-        discharge = await Discharge.new();
+        discharge = await Discharge.new(membershipFee, newWhitelister1, newWhitelister2);
 
         await discharge.requestMembership({from: newMember});
 
-        await discharge.addWhitelister(newWhitelister1, {from: delegate});
-        await discharge.addWhitelister(newWhitelister2, {from: delegate});
+        // await discharge.addWhitelister(newWhitelister1, {from: delegate});
+        // await discharge.addWhitelister(newWhitelister2, {from: delegate});
 
         await discharge.whitelistMember(newMember, {from: newWhitelister1});
         await discharge.whitelistMember(newMember, {from: newWhitelister2});
 
-        await discharge.payMembership({from: newMember, value: amount});
+        await discharge.payMembership({from: newMember, value: membershipFee});
 
 
         annualGADate = latestTime() + duration.weeks(10);

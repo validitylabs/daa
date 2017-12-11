@@ -18,13 +18,15 @@ contract('UpdateOrganization', function(accounts) {
     let updateOrganization;
     let gaDate;
 
+    const membershipFee = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+
     const delegate = accounts[0];
     const newMember = accounts[2];
     const newWhitelister1 = accounts[3];
     const newWhitelister2 = accounts[4];
 
     // const name = "test";
-    const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
+    // const amount = new web3.BigNumber(web3.toWei(1, 'ether'));
     // const destinationAddress = accounts[5];
     const prGADuration = duration.days(14);
     // const extendedDuration = 120; // 2 mins in seconds
@@ -40,17 +42,17 @@ contract('UpdateOrganization', function(accounts) {
     });
 
     beforeEach(async function() {
-        updateOrganization = await UpdateOrganization.new();
+        updateOrganization = await UpdateOrganization.new(membershipFee, newWhitelister1, newWhitelister2);
 
         await updateOrganization.requestMembership({from: newMember});
 
-        await updateOrganization.addWhitelister(newWhitelister1, {from: delegate});
-        await updateOrganization.addWhitelister(newWhitelister2, {from: delegate});
+        // await updateOrganization.addWhitelister(newWhitelister1, {from: delegate});
+        // await updateOrganization.addWhitelister(newWhitelister2, {from: delegate});
 
         await updateOrganization.whitelistMember(newMember, {from: newWhitelister1});
         await updateOrganization.whitelistMember(newMember, {from: newWhitelister2});
 
-        await updateOrganization.payMembership({from: newMember, value: amount});
+        await updateOrganization.payMembership({from: newMember, value: membershipFee});
 
 
         gaDate = latestTime() + duration.weeks(10);

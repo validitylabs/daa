@@ -21,6 +21,8 @@ contract('SimpleProposals', function(accounts) {
 
     let simpleProposals;
 
+    const membershipFee = new web3.BigNumber(web3.toWei(0.1, 'ether'));
+
     const delegate = accounts[0];
     const newMember = accounts[2];
     const newWhitelister1 = accounts[3];
@@ -39,17 +41,17 @@ contract('SimpleProposals', function(accounts) {
     });
 
     beforeEach(async function() {
-        simpleProposals = await SimpleProposals.new();
+        simpleProposals = await SimpleProposals.new(membershipFee, newWhitelister1, newWhitelister2);
 
         await simpleProposals.requestMembership({from: newMember});
 
-        await simpleProposals.addWhitelister(newWhitelister1, {from: delegate});
-        await simpleProposals.addWhitelister(newWhitelister2, {from: delegate});
+        // await simpleProposals.addWhitelister(newWhitelister1, {from: delegate});
+        // await simpleProposals.addWhitelister(newWhitelister2, {from: delegate});
 
         await simpleProposals.whitelistMember(newMember, {from: newWhitelister1});
         await simpleProposals.whitelistMember(newMember, {from: newWhitelister2});
 
-        await simpleProposals.payMembership({from: newMember, value: amount});
+        await simpleProposals.payMembership({from: newMember, value: membershipFee});
     });
 
     it('should submit proposal', async function() {

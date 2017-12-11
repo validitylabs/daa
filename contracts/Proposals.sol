@@ -38,6 +38,11 @@ contract Proposals is Membership {
 
     mapping(uint256 => Proposal[]) proposals;
 
+    function Proposals(uint256 _fee, address _whitelister1, address _whitelister2)
+        Membership(_fee, _whitelister1, _whitelister2)  {
+
+    }
+
     function submitProposal(
         uint256 proposalType,
         bytes32 name,

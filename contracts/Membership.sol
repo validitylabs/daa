@@ -14,20 +14,31 @@ contract Membership {
         uint256 whitelisted;
         mapping(address => bool) whitelistedBy;
         bool paid;
+        uint256 requestTime;
     }
+
+    address public delegate;
+    uint256 public fee;
 
     mapping (address => Member) public members;
     uint256 allMembers;
 
-    address public delegate;
+    uint256 private constant paymentPeriod = 1 years;
 
     // member => (whitelister => time)
     // mapping (address => mapping(address => uint256)) public whitelistMembers;
 
-    function Membership() {
+    function Membership(uint256 _fee, address _whitelister1, address _whitelister2) {
+        require(_whitelister1 != address(0));
+        require(_whitelister2 != address(0));
+
         delegate = msg.sender;
-        members[msg.sender] = Member(MemberTypes.DELEGATE, 0, false); // TODO:
-        allMembers = 1;
+        members[delegate] = Member(MemberTypes.DELEGATE, 0, false, now);
+        members[_whitelister1] = Member(MemberTypes.WHITELISTER, 0, false, now);
+        members[_whitelister2] = Member(MemberTypes.WHITELISTER, 0, false, now);
+        allMembers = 3;
+        // fee = 100000000000000000; // 0.1 Ether
+        fee = _fee;
     }
 
     function() {
@@ -54,7 +65,7 @@ contract Membership {
 
 
     function requestMembership() public {
-        members[msg.sender] = Member(MemberTypes.NOT_MEMBER, 0, false);
+        members[msg.sender] = Member(MemberTypes.NOT_MEMBER, 0, false, now);
     }
 
     function whitelistMember(address addrs) public onlyWhitelister {
@@ -70,17 +81,18 @@ contract Membership {
     }
 
     function addWhitelister(address addrs) public onlyDelegate {
-        members[addrs] = Member(MemberTypes.WHITELISTER, 0, false);
-        allMembers = allMembers.add(1);
+        require(members[addrs].memberType == MemberTypes.EXISTING_MEMBER);
+        members[addrs].memberType = MemberTypes.WHITELISTER;
     }
 
     function removeWhitelister(address addrs) public onlyDelegate {
         require(members[addrs].memberType == MemberTypes.WHITELISTER);
-        removeMember(addrs);
+        members[addrs].memberType = MemberTypes.EXISTING_MEMBER;
     }
 
     function payMembership() public payable {
-        // TODO: check msg.value
+        // require(members[msg.sender].requestTime > 0); // TODO: ?
+        require(msg.value == fee);
         members[msg.sender].paid = true;
         if(members[msg.sender].whitelisted >= 2) {
             concludeJoining(msg.sender);
@@ -113,16 +125,19 @@ contract Membership {
         return (memberType, whitelisted, paid);
     }
 
-    // TODO: ?
-    function removeMemberThatDidntPay(address addrs) internal {
+    // Anyone (even non members) can call this function
+    function removeMemberThatDidntPay(address addrs) public {
+        Member storage member = members[addrs];
+        require(!member.paid);
+        require(member.requestTime > 0);
+        require(now > member.requestTime.add(paymentPeriod));
+
         removeMember(addrs);
     }
 
-    function setDelegate(address newDelegate) internal {
+    function setDelegate(address newDelegate) internal onlyMember {
         require(newDelegate != address(0));
         require(delegate != newDelegate);
-
-        // TODO: or removeMember?
         members[delegate].memberType = MemberTypes.EXISTING_MEMBER;
         // members[delegate].whitelisted = 2;
         // members[delegate].paid = true;
@@ -131,9 +146,8 @@ contract Membership {
         members[newDelegate].memberType = MemberTypes.DELEGATE;
     }
 
-    function removeDelegate() internal {
+    function removeDelegate() internal onlyMember {
         require(delegate != address(0));
-        // TODO: or removeMember?
         members[delegate].memberType = MemberTypes.EXISTING_MEMBER;
     }
 

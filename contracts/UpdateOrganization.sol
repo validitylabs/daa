@@ -8,6 +8,11 @@ contract UpdateOrganization is ExtraordinaryGA {
 
     uint256 private constant voteTime = 10 minutes;
 
+    function UpdateOrganization(uint256 _fee, address _whitelister1, address _whitelister2)
+        ExtraordinaryGA(_fee, _whitelister1, _whitelister2) {
+
+    }
+
     // Proposal has to be readable by external SC
     function getUpdOrganizationProposal(uint256 proposalId) external constant returns (
         address submitter,
