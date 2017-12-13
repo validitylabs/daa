@@ -10,10 +10,10 @@ import './ChangeStatutes.sol';
 import './UpdateOrganization.sol';
 
 
-contract DAA is SimpleProposals { //, Discharge, DelegateCandidacy, ExpelMember, Dissolution, ChangeStatutes, UpdateOrganization {
+contract DAA is SimpleProposals, Discharge, DelegateCandidacy, ExpelMember, Dissolution, ChangeStatutes, UpdateOrganization {
 
     function DAA(uint256 _fee, address _whitelister1, address _whitelister2)
-        SimpleProposals(_fee, _whitelister1, _whitelister2) { // TODO:
+        UpdateOrganization(_fee, _whitelister1, _whitelister2) { // TODO:
 
     }
 
