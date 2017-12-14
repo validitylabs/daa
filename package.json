@@ -14,7 +14,7 @@
     "console": "truffle console",
     "compile": "truffle compile --all",
     "migrate": "truffle migrate --compile-all --reset",
-    "testrpc": "testrpc --gasPrice 1000000000 --port 8555 --mnemonic 'vital hedgehog drink result veteran juice jacket chat prepare small afraid orange'",
+    "testrpc": "testrpc --gasPrice 1 --gasLimit 4712388 --port 8545 --mnemonic 'vital hedgehog drink result veteran juice jacket chat prepare small afraid orange'",
     "clean": "rm -fr build; rm -fr bin; rm -fr coverage-js",
     "reset": "rm -fr node_modules; npm run clean",
     "upgrade": "npm run reset; yarn upgrade",
