@@ -27,7 +27,7 @@ contract DAA {
     bool public active;
 
 
-    constructor(address _membership, address _proposalManager, address _GA, address _treasury, address _wallet, address _externalWallet) {
+    constructor(address _membership, address _proposalManager, address _GA, address _treasury, address _wallet, address _externalWallet) public {
         membershipContract = Membership(_membership);
         // proposalManagerContract = ProposalManager(_proposalManager);
         proposalManagerContract = ProposalInterface(_proposalManager);

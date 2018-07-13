@@ -267,11 +267,10 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
      *@dev    Now we check whether this member is a whitelister. Later, when the proposal concludes, another check is needed.
      */
     function createExpelMemberProposal(
-        bytes32 _proposalID,
-        bytes32 _shortDescription,
-        address _targetMember,
-        uint256 _startingTime,
-        uint256 _duration
+        bytes32 _proposalID
+        ,bytes32 _shortDescription
+        ,address _targetMember
+        ,uint256 _startingTime
     ) public memberOnly returns (bool) {
         require(accessibleGate.checkIsMember(_targetMember));
         require(accessibleGate.checkIsDelegate(_targetMember) == false);
