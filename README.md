@@ -19,11 +19,12 @@ This document describes the technical specifications of the DAAS project with a 
             - [Expel member](#expel-member)
             - [Membership fee](#membership-fee)
         - [Ordinary proposal](#ordinary-proposal)
-        - [GA](#ga)
+        - [General Assembly](#general-assembly)
     - [Procedure](#procedure)
         - [Steps for deployment](#steps-for-deployment)
         - [Steps to set up a GA](#steps-to-set-up-a-ga)
-    - [Undergoing Development](#undergoing-development)
+    - [Ongoing Development](#ongoing-development)
+    - [Testing](#testing)
 
 ## Goal
 
@@ -214,7 +215,7 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
   
 
-  - [ ] Voting mechanism for 
+- [ ] Voting mechanism - to revise
 
   
 
