@@ -5,25 +5,9 @@ This document describes the technical specifications of the DAAS project with a 
 - [Decentralised Autonomous Association Switzerland – DAAS](#decentralised-autonomous-association-switzerland-%E2%80%93-daas)
     - [Goal](#goal)
     - [Architecture](#architecture)
-        - [contracts](#contracts)
-        - [Functions](#functions)
     - [Concerns](#concerns)
-        - [Upgradability and flexibility](#upgradability-and-flexibility)
-        - [Security of the organization](#security-of-the-organization)
-        - [GA Proposal](#ga-proposal)
-            - [Propose a new delegate](#propose-a-new-delegate)
-            - [Vote for proposals at GA](#vote-for-proposals-at-ga)
-            - [Proposal for extraordinary GA and GA](#proposal-for-extraordinary-ga-and-ga)
-            - [Dissolution](#dissolution)
-            - [Update](#update)
-            - [Expel member](#expel-member)
-            - [Membership fee](#membership-fee)
-        - [Ordinary proposal](#ordinary-proposal)
-        - [GA](#ga)
-    - [Procedure](#procedure)
-        - [Steps for deployment](#steps-for-deployment)
-        - [Steps to set up a GA](#steps-to-set-up-a-ga)
-    - [Undergoing Development](#undergoing-development)
+            - [GA Proposal](#ga-proposal)
+                - [Propose a new delegate](#propose-a-new-delegate)
 
 ## Goal
 
@@ -127,33 +111,26 @@ What will happen exactly when dissolution??
 - Proposese candidate delegate and got selected
 - Step down voluntarily (and propose GA)
 
-5. What's the difference between "step down" and "discharge" ??
+5. 
 
 #### Membership fee
-
-Annual fee...
 
 Is the membership compulsory or voluntary? Do we allow voluntary contribution (with extra amount)? Does the amount depend on the position or strictly same fee or there is a minimum contribution then the more it donates.
 
 Further steps, to introduce the stake/token, the heavier the stake/vote weight it has.
 
-Is it refundable? Nope... but a proposal is possible for payback the accidental extra payment
-
-voluntary donation is welcome
+Is it refundable? 
 
 ### Ordinary proposal
 
 Is it possible to be destructed before it’s concluded by the owner?
 External donation can only be accepted when the proposal is created (open and before it becomes concludable nor concluded). No need to be votable.
 
-### General Assembly
-
-There are two types of General Assembly (GA). One is the ordinary GA, set by the delegate; The other one is the extraordinary GA, set by a proposal. Such proposal should be initiated by any member in case of emergency and voted by all members. 
+### GA
 
 1. What is the minimum time interval for such kind of extraordinary GA: Frequency and length ? What are the criteria for ordinary (annual) GAs? Is there any other regulation for the time distance between extra- and ordinary GA? 
-2. If there any obligation for delegate to have annual GA? How flexible delegate can be? Exactly one GA per calendar year / elected year? Or only need to have certain GAs during the elected period where on average there is one per year? 
+2. If there any obligation for delegate to have annual GA?
 3. For both kinds of GA, is there any limits of timing? e.g. I can plan for max. in two years.
-4. Any other additonal requirements for the GA?
 
 ## Procedure
 
@@ -178,46 +155,13 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
       Each candidate is represented by one proposal. Therefore, all the candidancy propsals need to be open at the same time, so that members can choose which to vote for. 
 
-## Ongoing Development
+## Undergoing Development
 
-- [ ] proposal discharge? = step down and propose GA?
-
-- [ ] check whether implemented: at the absence of delegate, disable payout.
-
-- [ ] Fix the setup of quorum
-
-- [x] check the magic constant across all contracts
-
-- [ ] Add necessary events to be emitted.
-
-- [ ] Check the ProposalManager. If moving some structs and quorum calculation to TallyClerkLib and ActionLib is reasonable?
-
-- [ ] Hash important information for function inputs and outputs.
-
-- [ ] **Fix the proposeDelegateCandidancy: ProposalManager.sol (line 369)**
-
-- [ ] Fix the conclusion of delegate candidate proposal. When getting the result the initial voting (or the second round of the revoting) setting up the proposals to be revoted 
-
-  1. Auto-calculation of the number of proposals to be revote (When calling the conclusion). Jump out if the number is only 1; Otherwise, keep following the steps.
-
-  2. Delete the previous array of proposals (maybe it's already done at the moment of GA voting)
-
-  3. Loop-call (think of the gas) of creating the new proposals (and of course clean up the unnecesaary counters)
-
-     `function calculateCandidateReceivedVoting(uint256 _minParticipant, uint _minYes) public proposalOnly returns (bool, bool, uint256) {`
-
-  4. Seperate call for the proposal preparation (make sure that this voting won't go to the next GA)
-
-  5. (Boardcast the new potential proposals and voting opening)
-
-  6. Start from the step 1
-
-  
-
-  - [ ] Voting mechanism for 
-
-  
-
-## Testing
-
-1. Gas of DAA contract constructor
+1. proposal discharge? = step down and propose GA?
+2. check whether implemented: at the absence of delegate, disable payout.
+3. Fix the conclusion of delegate candidate proposal
+4. Fix the setup of quorum
+5. **Fix the proposeDelegateCandidancy: ProposalManager.sol (line 369)**
+6. check the magic constant across all contracts
+7. Check the ProposalManager. If moving some structs and quorum calculation to TallyClerkLib and ActionLib is reasonable?
+8. Hash important information for function inputs and outputs.

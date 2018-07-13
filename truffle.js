@@ -1,50 +1,75 @@
-// https://ethereum.stackexchange.com/a/21409
+/**
+ * Truffle configuration
+ */
+
+const cnf               = require('./config/networks.json');
+const HDWalletProvider  = require('truffle-hdwallet-provider');
+
 require('babel-register');
 require('babel-polyfill');
 
-module.exports = {
-  networks: {
-    development: {
-      host: "localhost",
-      port: 8545,
-      network_id: "*", // Match any network id
-      gasPrice: 1,
-      gas: 4712388
-    }
-  }
-};
+const network   = process.env.NETWORK;
+let secrets     = '';
 
-/**
- * Truffle configuration
- *
- * @see https://github.com/trufflesuite/truffle-config/blob/master/index.js
- */
-/*
-var path        = require("path");
-var basePath    = process.cwd();
+if (network === 'rinkebyInfura') {
+    secrets = require('./config/.secrets.json');
+}
 
-var buildDir            = path.join(basePath, "build");
-var buildDirContracts   = path.join(basePath, "build/contracts");
-var srcDir              = path.join(basePath, "contracts");
-var testDir             = path.join(basePath, "test/contracts");
-var migrationsDir       = path.join(basePath, "migrations");
+const path      = require('path');
+const basePath  = process.cwd();
+
+const buildDir          = path.join(basePath, 'build');
+const buildDirContracts = path.join(basePath, 'build/contracts');
+const srcDir            = path.join(basePath, 'contracts');
+const testDir           = path.join(basePath, 'test/contracts');
+const migrationsDir     = path.join(basePath, 'migrations/contracts');
 
 module.exports = {
     mocha: {
         useColors: true
     },
-    networks: {
-        development: {
-            host: "localhost",
-            port: 8555,
-            network_id: "*", // Match any network id
-            gasPrice: 21
+    solc: {
+        optimizer: {
+            enabled:    true,
+            runs:       200
         }
     },
-    build_directory: buildDir,
-    contracts_build_directory: buildDirContracts,
-    migrations_directory: migrationsDir,
-    contracts_directory: srcDir,
-    test_directory: testDir
+    networks: {
+        develop: {
+            host:       cnf.networks.develop.host,
+            port:       cnf.networks.develop.port,
+            network_id: cnf.networks.develop.chainId, // eslint-disable-line
+            gas:        cnf.networks.develop.gas,
+            gasPrice:   cnf.networks.develop.gasPrice
+        },
+        coverage: {
+            host:       cnf.networks.coverage.host,
+            network_id: cnf.networks.coverage.chainId, // eslint-disable-line
+            port:       cnf.networks.coverage.port,
+            gas:        cnf.networks.coverage.gas,
+            gasPrice:   cnf.networks.coverage.gasPrice
+        },
+        rinkebyInfura:  getRinkebyConfig()
+    },
+    build_directory:            buildDir,            // eslint-disable-line
+    contracts_build_directory:  buildDirContracts,   // eslint-disable-line
+    migrations_directory:       migrationsDir,       // eslint-disable-line
+    contracts_directory:        srcDir,              // eslint-disable-line
+    test_directory:             testDir              // eslint-disable-line
 };
-*/
+
+function getRinkebyConfig() {
+    let rinkebyProvider = '';
+
+    if (network === 'rinkebyInfura') {
+        rinkebyProvider = new HDWalletProvider(secrets.rinkeby.mnemonic, secrets.rinkeby.host);
+
+        return {
+            network_id: cnf.networks.rinkeby.chainId, // eslint-disable-line
+            provider:   rinkebyProvider,
+            from:       rinkebyProvider.getAddress(),
+            gas:        cnf.networks.rinkeby.gas,
+            gasPrice:   cnf.networks.rinkeby.gasPrice
+        };
+    }
+}
