@@ -79,7 +79,10 @@ It is necessary to define the scope of potential changes in our case, in order t
 Some possible attack vectors (e.g. double spending, theft, or signature forgery) need to be thoroughly considered during the architecture design of the system. Double spending and theft could be solved with the best practice for dApp architecture design and robust coding logics inherintly. However, the signature forgery needs to be further discussed: There are more than one approach to solve such problem:
 
 - heritage model: Each user could point another user to inherit his property (his role in the association, his )
-- Activity model: If a user was not actively participating any voting/initiating voting/paying membership for some time (duration TBD, e.g. 2 years), this account should then be on hold (freeze account). His absence is not counted in the quorum in voting. A whitelisted/ the delegate can freeze the account or release it. 
+
+- Activity model: If a user was not actively participating any voting/initiating voting/paying membership for some time (duration TBD, e.g. 2 years), this account should then be on hold (freeze account). His absence is not counted in the quorum in voting. A whitelisted/ the delegate can freeze the account or release it.
+
+  However, according to the Swiss Civil Code Art. 70 *Membership is neither transferable nor heritable*
 
 ### GA Proposal
 
@@ -129,6 +132,7 @@ What will happen exactly when dissolution??
 - Step down voluntarily (and propose GA)
 
 5. What's the difference between "step down" and "discharge" ??
+6. Whether to implement the resignation (cf. Art. 70) *All members have a legal right to resign subject to six months' notice expiring at the end of the calendar year or, if an administrative period is provided for, at the end of such period.*
 
 #### Membership fee
 
@@ -222,3 +226,7 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 ## Testing
 
 1. Gas of DAA contract constructor
+
+## Reference
+
+1. Swiss Civil Code of 10 December 2017 https://www.admin.ch/opc/en/classified-compilation/19070042/index.html#

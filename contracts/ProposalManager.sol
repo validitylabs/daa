@@ -73,7 +73,8 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     uint256 constant VOTINGDURITION_PROPOSAL_GA = 10 minutes;
     uint256 constant ANSWER_OPTIONS = 3;
 
-
+    // replace the bytes32 _proposalID by the uint256 _proposalID
+    uint256 public numTotalProposals;
     mapping(bytes32=>TallyClerkLib.VotesPerProposal) public votesForEachProposal;
     mapping(uint256=>uint256) public limitedVotingTime;                     // mapping from ActionType to maximum period of time
     mapping(uint256=>Quorum) public actionQuorum;
