@@ -32,6 +32,12 @@ The goal of this project is to create a decentralized autonomous association (DA
 
 The description is architecture agnostic but aims at being implemented on the Ethereum public blockchain.
 
+## Bref introduction to DAAS
+
+The DAAS represented by one natural person (delegate), who holds the office for x years. There are at least two white-listers who examine membership applications. 
+
+[Imgur](https://i.imgur.com/RE5YQMo.png)
+
 ## Architecture
 
 ### contracts

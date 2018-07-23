@@ -14,7 +14,8 @@ contract MinimalProposal {
     using TimedLib for uint256;
 
     struct BasicProposal {
-        bytes32 proposalID;
+        bytes32 proposalID;          // This attribute needs to be replaced by the incremental proposalID (uint256)
+        // uint256 proposalID;
         bytes32 shortDescription;    // This allows members to quickly check the proposal before participating in the vote.
         uint256 startingTime;        // Blocktime of the start of the voting for proposal
         uint256 endingTime;          // Blocktime of the end of the voting
@@ -24,6 +25,8 @@ contract MinimalProposal {
         // There is no need for the proposalType when the actionType is expanded with one additional element for non GA proposals
     }
 
+    // uint256 public currentProposalID;   // This takes care of the counter for the next new proposal. 
+                                        // Noted, there is a chance that when the proposal manager get updated, this variable is set by default to 0 and mess up with the wallet system.
     mapping(bytes32=>BasicProposal) public proposalList;
 
     modifier votable(bytes32 _proposalID) {
