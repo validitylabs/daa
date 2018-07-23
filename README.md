@@ -36,7 +36,31 @@ The description is architecture agnostic but aims at being implemented on the Et
 
 The DAAS represented by one natural person (delegate), who holds the office for x years. There are at least two white-listers who examine membership applications. 
 
-[Imgur](https://i.imgur.com/RE5YQMo.png)
+![Imgur](https://i.imgur.com/RE5YQMo.png)
+
+To request membership, the prospective member needs:
+
+![Imgur](https://i.imgur.com/4txsi31.png)
+
+Then white-listers need to:
+
+![Imgur](https://i.imgur.com/FTI0lU5.png) 
+
+Upon success, the person is ready to become a new member. The only step left is to pay the membership fee, as:
+
+![Imgur](https://i.imgur.com/x4r6Z1H.png)
+
+Each member has equal rights to initiate a propose, as well as vote on them. A typical voting process is like below
+
+![Imgur](https://i.imgur.com/fKkkzgZ.png)
+
+To vote for an ordinary proposal: 
+
+![Imgur](https://i.imgur.com/jPX2zln.png)
+
+To conclude a proposal: 
+
+![Imgur](https://i.imgur.com/rbM1VLi.png)
 
 ## Architecture
 
@@ -91,6 +115,10 @@ Some possible attack vectors (e.g. double spending, theft, or signature forgery)
   However, according to the Swiss Civil Code Art. 70 *Membership is neither transferable nor heritable*
 
 ### GA Proposal
+
+To make a GA proposal, it follows the procedure below:
+
+![Imgur](https://i.imgur.com/yBGiJMP.png)
 
 #### Propose a new delegate
 
@@ -154,7 +182,9 @@ voluntary donation is welcome
 
 ### Ordinary proposal
 
-Is it possible to be destructed before it’s concluded by the owner?
+To make an ordinary proposal, it follows: 
+
+![Imgur](https://i.imgur.com/y5yI5Ex.png)Is it possible to be destructed before it’s concluded by the owner?
 External donation can only be accepted when the proposal is created (open and before it becomes concludable nor concluded). No need to be votable.
 
 ### General Assembly
