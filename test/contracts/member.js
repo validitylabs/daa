@@ -8,12 +8,15 @@ import {expectThrow, waitNDays, getEvents, BigNumber, increaseTimeTo} from './he
 import { getNegativePatternsAsPositive } from '../../node_modules/fast-glob/out/managers/tasks';
 import { request } from 'https';
 
-// const IcoToken = artifacts.require('./IcoToken');
+// const DAOToken = artifacts.require('./DAOToken.sol');˚
 
 const Membership = artifacts.require('./Membership.sol');
 const ProposalManager = artifacts.require('./ProposalManager.sol');
+const GAManager = artifacts.require('./GAManager.sol');
 const Accessible = artifacts.require('./Accessible.sol');
-const DAOToken = artifacts.require('./DAOToken.sol');
+const Wallet = artifacts.require('./Wallet.sol');
+const ExternalWallet = artifacts.require('./ExternalWallet.sol');
+const Treasury = artifacts.require('./Treasury.sol');
 
 const should = require('chai') // eslint-disable-line
     .use(require('chai-as-promised'))
@@ -24,17 +27,19 @@ const should = require('chai') // eslint-disable-line
  * IcoToken contract
  * Member contract
  */
-contract('Membership Test (with DAO Token)', (accounts) => {
+contract('Membership Test (without DAO Token)', (accounts) => {
 
     const initiator     = accounts[0];
-    const whitelister1  = accounts[1];
-    const whitelister2  = accounts[2];
-    const requester     = accounts[3];
-    const newWhiteLister = accounts[4];
+    const delegate      = accounts[1];
+    const whitelister1  = accounts[2];
+    const whitelister2  = accounts[3];
+    const requester     = accounts[5];
+    const newWhiteLister = accounts[6];
     const others        = accounts[9];
 
     // Printout useful account addresses for further comparison
     console.log('Initiator:'.blue, initiator);
+    console.log('Delegate'.blue, delegate);
     console.log('Whitelister1'.blue, whitelister1);
     console.log('Whitelister2'.blue, whitelister2);
     console.log('NewWhiteLister'.blue, newWhiteLister);
@@ -43,15 +48,15 @@ contract('Membership Test (with DAO Token)', (accounts) => {
 
     // Provide membershipInstance for every test case
 
-    let DAOTokenInstance;
+    // let DAOTokenInstance;
     let membershipInstance;
 
     beforeEach(async () => {
         membershipInstance    = await Membership.deployed();
-        // console.log('The deployed membership instance is at: ' + membershipInstance.address);
-        const  DAOTokenAddress  = await membershipInstance.nativeToken();
-        // console.log('The deployed token instance is at address: ' + DAOTokenAddress);
-        DAOTokenInstance        = await DAOToken.at(DAOTokenAddress);
+        console.log('The deployed membership instance is at: ' + membershipInstance.address);
+        // const  DAOTokenAddress  = await membershipInstance.nativeToken();
+        // // console.log('The deployed token instance is at address: ' + DAOTokenAddress);
+        // DAOTokenInstance        = await DAOToken.at(DAOTokenAddress);
     });
 
     /**
@@ -63,7 +68,7 @@ contract('Membership Test (with DAO Token)', (accounts) => {
 
         const currentDelegate   = await membershipInstance.getDelegate.call();
 
-        assert.equal(initiator, currentDelegate, 'Current delegate does not match with the contract initiator.');
+        assert.equal(delegate, currentDelegate, 'Current delegate does not match with the contract initiator.');
     });
 
     it('should have delegate as membershipStatus.isMember', async()=> {
@@ -88,18 +93,17 @@ contract('Membership Test (with DAO Token)', (accounts) => {
         await expectThrow(membershipInstance.removeWhitelister(newWhiteLister, {from:initiator}));
         await expectThrow(membershipInstance.removeWhitelister(newWhiteLister, {from:whitelister1}));
         await expectThrow(membershipInstance.removeWhitelister(whitelister1, {from:initiator}));
-
     });
 
     it('should only allow delegate to add new white lister, if the person is not yet a whitelister', async () => {
         await expectThrow(membershipInstance.addWhitelister(whitelister1, {from:initiator}));
         await expectThrow(membershipInstance.addWhitelister(newWhiteLister, {from:whitelister1}));
-        const tx1 = await membershipInstance.addWhitelister(newWhiteLister, {from:initiator});
-
+        
+        const tx1 = await membershipInstance.addWhitelister(newWhiteLister, {from:delegate});
         const events1 = getEvents(tx1, 'ChangeInWhitelister');
         assert.isTrue(events1[0].removedOrAdded, 'Failed to add the new user');
         assert.equal(events1[0].concernedWhitelister, newWhiteLister, 'User account mismatch');
-
+        
         let whitelistersNumber = await membershipInstance.testFuncGetWhitelistersLength.call();
         // console.log(whitelistersNumber.toNumber());
         assert.equal(whitelistersNumber, 3, 'The number of whitelisters is not as expected');

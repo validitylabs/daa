@@ -1,4 +1,4 @@
-/**
+ /**
  * Migration - DAA/Membership
  */
 // const fs            = require('fs');
@@ -24,41 +24,30 @@ module.exports = function (deployer, network, accounts) {
     //const endTime     = cnf.endTimeTesting;
 
     const initiator     = accounts[0];
-    const whitelister1  = accounts[1];
-    const whitelister2  = accounts[2];
-    const requester     = accounts[3];
-    const newWhiteLister = accounts[4];
+    const delegate      = accounts[1];
+    const whitelister1  = accounts[2];
+    const whitelister2  = accounts[3];
+    const requester     = accounts[5];
+    const newWhiteLister = accounts[6];
     const others        = accounts[9];
 
     console.log("Start deploying");
-
-    // deployer.deploy(Accessible, {from: initiator}).then(() => {
-    //     deployer.deploy(Membership, whitelister1, whitelister2, {from: initiator}).then(() => {
-    //         return Membership.deployed().then((MembershipInstance) => {
-    //             console.log(' Membership contract address: ' + MembershipInstance.address);
+    // @dev Code for deployer when there's token.
+    // deployer.deploy(DAOToken, 'LongNameForDAAS', 'DAAS', 250000000000000000, {from: initiator}).then(() => {
+    //     return DAOToken.deployed().then((DAOTokenInstance) => {
+    //         console.log(' DAOTOken contract address: ', DAOTokenInstance.address);
+    //         return deployer.deploy(Membership, DAOTokenInstance.address, whitelister1, whitelister2, {from: initiator}).then(() => {
+    //             return Membership.deployed().then((MembershipInstance) => {
+    //                 console.log(' Membership contract address: ', MembershipInstance.address);
+    //             });
     //         });
     //     });
-
-    //     // return IcoToken.deployed().then((icoTokenInstance) => {
-    //     //     icoTokenAddress = icoTokenInstance.address;
-    //     //     console.log('[ icoTokenInstance.address ]: ' + icoTokenAddress);
-    //     //     return deployer.deploy(IcoCrowdsale, startTime, endTime, cnf.rateChfPerEth, wallet, icoTokenAddress, cnf.confirmationPeriod, underwriter).then(() => {
-    //     //         return IcoCrowdsale.deployed().then((icoCrowdsaleInstance) => {
-    //     //             console.log('[ icoCrowdsaleInstance.address ]: ' + icoCrowdsaleInstance.address);
-    //     //         });
-    //     //     });
-    //     // });
     // });
-
-    deployer.deploy(DAOToken, 'LongNameForDAAS', 'DAAS', 250000000000000000, {from: initiator}).then(() => {
-        return DAOToken.deployed().then((DAOTokenInstance) => {
-            console.log(' DAOTOken contract address: ', DAOTokenInstance.address);
-            return deployer.deploy(Membership, DAOTokenInstance.address, whitelister1, whitelister2, {from: initiator}).then(() => {
-                return Membership.deployed().then((MembershipInstance) => {
-                    console.log(' Membership contract address: ', MembershipInstance.address);
-                });
-            });
-        });
+    
+    deployer.deploy(Membership, delegate, whitelister1, whitelister2, {from: initiator}). then(() => {
+        return Membership.deployed().then((MembershipInstance) => {
+            console.log(' Membership contract address: ', MembershipInstance.address);
+        })
     });
 
 
