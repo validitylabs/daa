@@ -47,6 +47,7 @@ contract ProposalInterface is Ownable {
     function checkActionIsExpel(bytes32 _proposalID) public view returns (bool);
 
     function updateMembershipContractAddress(address _newAccessible) public;
+    
     function updateGAContractAddress(address _newGA) public;
 
     // function updateContractAddress(address _newAccessible, address _newGA) public;

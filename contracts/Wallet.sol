@@ -19,13 +19,14 @@ contract Wallet is Ownable {
 
 
     event IncreaseAllowance(address indexed Account, uint256 Amount, uint256 Timestamp);
+    event AcceptPayment(address indexed Account, uint256 Amoount, uint256 Timestamp);
 
-    constructor() public {
-        // The owner should be the treasury contract.
-        owner = msg.sender;
-    }
+    constructor() public {}
 
-    //@dev This function is called when the proposal is successful, therefore it allows certain account to withdraw money from this wallet (via treasury account)
+    /**
+     *@title Increase the allowance of the account to withdraw
+     *@dev This function is called when the proposal is successful, therefore it allows certain account to withdraw money from this wallet (via treasury account)
+     */
     function increaseAllowance(address _adr, uint256 _amount) public onlyOwner returns (bool) {
         require(totalAllowance.add(_amount) <= totalBalance);
         allowance[_adr] = allowance[_adr].add(_amount);
@@ -39,6 +40,7 @@ contract Wallet is Ownable {
         uint256 _amount = msg.value;
         totalBalance = totalBalance.add(_amount);
         individualContribution[_adr] = individualContribution[_adr].add(_amount);
+        emit AcceptPayment(_adr, _amount, now);
         return true;
     }
 

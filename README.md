@@ -4,6 +4,7 @@ This document describes the technical specifications of the DAAS project with a 
 
 - [Decentralised Autonomous Association Switzerland – DAAS](#decentralised-autonomous-association-switzerland-%E2%80%93-daas)
     - [Goal](#goal)
+    - [Bref introduction to DAAS](#bref-introduction-to-daas)
     - [Architecture](#architecture)
         - [contracts](#contracts)
         - [Functions](#functions)
@@ -25,6 +26,7 @@ This document describes the technical specifications of the DAAS project with a 
         - [Steps to set up a GA](#steps-to-set-up-a-ga)
     - [Ongoing Development](#ongoing-development)
     - [Testing](#testing)
+    - [Reference](#reference)
 
 ## Goal
 
@@ -207,9 +209,10 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
    4. Wallet
    5. ExternalWallet
    6. Treasury
-2. Finished deployment for DAA
-3. Transfer ownership from deployer to DAA contract.
-4. Call finishDeployment function in DAA contract.
+2. Transfer ownership of Wallet and ExternalWallet from deployer to Treasury.
+3. Finished deployment for DAA
+4. Transfer ownership from deployer to DAA contract.
+5. Call finishDeployment function in DAA contract.
 
 ### Steps to set up a GA
 

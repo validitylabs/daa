@@ -12,8 +12,6 @@ contract ExternalWallet is Ownable {
 
     using SafeMath for uint256;
 
-    ProposalInterface theProposalInterface;
-
     struct ProjectDonation{
         mapping(uint256=>address) donerList;
         mapping(address=>uint256) donationPerDoner;
@@ -21,21 +19,32 @@ contract ExternalWallet is Ownable {
         uint256 totalDonationForProject;
     }
     
-    mapping(bytes32=>ProjectDonation) projectDonationList;
-    mapping(bytes32=>mapping(address=>uint256)) withdrawingDonation;  // maybe mapping needs to do like bytes32 => address => uint256
+    ProposalInterface public theProposalInterface;
     uint256 public totalBalance;
+    mapping(bytes32=>ProjectDonation) public projectDonationList;
+    mapping(bytes32=>mapping(address=>uint256)) public withdrawingDonation;  
+    // maybe mapping needs to do like bytes32 => address => uint256
 
-
+    /**
+     *@title Construct the wallet
+     *@dev the owner should be later transterred to the address of the Treasury contract
+     *@param _proposalInterfaceAddress the address of ProposalManager contract.
+     */
     constructor(address _proposalInterfaceAddress) public {
-        // treasuryContract = msg.sender;
         theProposalInterface = ProposalInterface(_proposalInterfaceAddress);
     }
 
     /**
-     *@dev The Treasury forward the payment. Therefore address is passed.
+     *@title External accounts deposit money for interesting project, via treasury
+     *@dev The Treasury forward the payment. Therefore address is passed. 
+     *@notice Although the function is public, onlyOwner can successfully transfer the money. Return true upon success.
+     *@param _proposalID the reference ID of proposals
+     *@param _adr The account (address) that has deposited the money 
      */
-    function depositMoney(bytes32 _proposalID, address _adr) public payable onlyOwner returns(bool) {
-        
+    function depositMoney(
+        bytes32 _proposalID, 
+        address _adr
+    ) public payable onlyOwner returns(bool) {
         // If the project accepts external participation and externals are allowed to deposit money.
         require(theProposalInterface.canExternalParticipate(_proposalID) == true);
         require(theProposalInterface.isProposalNotEndYet(_proposalID) == true);
@@ -55,20 +64,27 @@ contract ExternalWallet is Ownable {
         return true;
     }
 
-    //@dev 
-    //@notice If proposal is sucessful upon conclusion, the account made the proposal shall retrieve the money;
-    //        Otherwise, is the proposal is not successful, external accounts can ask back their deposit money.
-    function withdrawMoney(bytes32 _proposalID, address _adr) public onlyOwner returns(bool) {
-        
+    /**
+     *@title External accounts withdraw money when the proposal is not passed, via treasury
+     *@dev If proposal is sucessful upon conclusion, the account made the proposal shall retrieve the money;
+            Otherwise, is the proposal is not successful, external accounts can ask back their deposit money.
+     *@notice Although the function is public, onlyOwner can successfully transfer the money. Return true upon success.
+     *@param _proposalID the reference ID of proposals
+     *@param _adr The account (address) that has deposited the money 
+     */
+    function withdrawMoney(
+        bytes32 _proposalID, 
+        address _adr
+    ) public onlyOwner returns(bool) {
         // The proposal is concluded. The requester should be either the destination of the proposal or the contributor.
         require(theProposalInterface.isProposalConcluded(_proposalID) == true);
         require(theProposalInterface.getProposaldestinationAddress(_proposalID) == _adr || projectDonationList[_proposalID].donationPerDoner[_adr] > 0);
 
         bool successful;
-        successful = theProposalInterface.getProposalFinalResult(_proposalID);
         address initiator;
-        initiator = theProposalInterface.getProposaldestinationAddress(_proposalID);
         uint256 operatingAmount;
+        successful = theProposalInterface.getProposalFinalResult(_proposalID);
+        initiator = theProposalInterface.getProposaldestinationAddress(_proposalID);
 
         // transact the amount of money
         if (successful) {
@@ -106,16 +122,23 @@ contract ExternalWallet is Ownable {
         }
     }
 
-    //@dev By calling this function, all the ledger and logic in the contract are lost. Only money is transferred to another address.
+    /**
+     *@title When smth happened, change the wallet addres to the new one. 
+     *@dev This is owner-only, which is DAA only
+     *@notice By calling this function, all the ledger and logic in the contract are lost. 
+     Only money is transferred to another address.
+     */
     function changeWalletAddress(address _newAdr) public onlyOwner returns (bool) {
         selfdestruct(_newAdr);
         return true;
     }
 
-    //@title Getter for the individual contribution.
+    /**
+     *@title Getter for the individual contribution.
+     *@param _proposalID the reference ID of proposals
+     */
     function getProjectExternalFund(bytes32 _proposalID) public view onlyOwner returns (uint256) {
         return projectDonationList[_proposalID].totalDonationForProject;
     }
 
-    function() public {}
 }

@@ -16,7 +16,7 @@ import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Treasury is Ownable{
 
     Wallet public daoWallet;
-    ExternalWallet public daoExternalWallet;
+    ExternalWallet public daoExternalWallet; 
     Accessible public accessibleGate;
     ProposalInterface public proposalGate;
     DAA public daa;
