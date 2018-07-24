@@ -23,7 +23,9 @@ contract ExternalWallet is Ownable {
     uint256 public totalBalance;
     mapping(bytes32=>ProjectDonation) public projectDonationList;
     mapping(bytes32=>mapping(address=>uint256)) public withdrawingDonation;  
-    // maybe mapping needs to do like bytes32 => address => uint256
+    // maybe mapping needs to do like bytes32 => address => 
+    
+    event DepositMoney(address indexed Account, bytes32 indexed ProposalID, uint256 Amount, uint256 Timestamp);
 
     /**
      *@title Construct the wallet
@@ -61,6 +63,7 @@ contract ExternalWallet is Ownable {
         projectDonationList[_proposalID].donationPerDoner[_adr] = _currentDonation.add(_amount);
         projectDonationList[_proposalID].totalDonationForProject = projectDonationList[_proposalID].totalDonationForProject.add(_amount);
         totalBalance = totalBalance.add(_amount);
+        emit DepositMoney(_adr, _proposalID, _amount, now);
         return true;
     }
 

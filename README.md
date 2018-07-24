@@ -204,7 +204,7 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
 1. Finished deployment for all the concrete contracts.
    1. Membership 
-   2. Proposal
+   2. ProposalManager
    3. GAManager
    4. Wallet
    5. ExternalWallet

@@ -19,10 +19,19 @@ contract Wallet is Ownable {
 
 
     event IncreaseAllowance(address indexed Account, uint256 Amount, uint256 Timestamp);
-    event AcceptPayment(address indexed Account, uint256 Amoount, uint256 Timestamp);
+    event AcceptPayment(address indexed Account, uint256 Amount, uint256 Timestamp);
+    event WithdrawMoney(address indexed Account, uint256 Amount, uint256 Timestamp);
 
     constructor() public {}
 
+    /**
+     *@title fallback when receving money for unknown reason
+     *@dev If some extra money received. Well, thank you.
+     */
+    function() public payable {
+        totalBalance = totalBalance.add(msg.value);
+        individualContribution[msg.sender] = individualContribution[msg.sender].add(msg.value);
+    }
     /**
      *@title Increase the allowance of the account to withdraw
      *@dev This function is called when the proposal is successful, therefore it allows certain account to withdraw money from this wallet (via treasury account)
@@ -31,21 +40,29 @@ contract Wallet is Ownable {
         require(totalAllowance.add(_amount) <= totalBalance);
         allowance[_adr] = allowance[_adr].add(_amount);
         totalAllowance = totalAllowance.add(_amount);
-        emit IncreaseAllowance(_adr, _amount, now);
+        emit IncreaseAllowance(_adr, _amount, block.timestamp);
         return true;
     }
 
     //@dev This function actually accepts users to pay for another one. Therefore, we use an explicit destination address, instead of tx.origin
+    /**
+     *@title Accept the member to pay their membership fee, via Treasury
+     *@dev
+     */
     function payContribution(address _adr) public payable onlyOwner returns(bool) {
         uint256 _amount = msg.value;
         totalBalance = totalBalance.add(_amount);
         individualContribution[_adr] = individualContribution[_adr].add(_amount);
-        emit AcceptPayment(_adr, _amount, now);
+        emit AcceptPayment(_adr, _amount, block.timestamp);
         return true;
     }
 
-    //@dev When the account asks for money, the wallet gives all that is allowed.
-    //@notice We create a sandbox where stores a snapshot of ready-to-withdraw money. The amount can be reverted back to main balance sheet if needed.
+    /**
+     *@title Let beneficiary withdraw money, if the proposal is successful
+     *@dev When the account asks for money, the wallet gives all that is allowed.
+     *@notice We create a sandbox where stores a snapshot of ready-to-withdraw money. 
+        The amount can be reverted back to main balance sheet if needed.
+     */
     function withdrawMoney(address _adr) public onlyOwner returns(bool) {
         require(allowance[_adr] > 0);
 
@@ -56,6 +73,7 @@ contract Wallet is Ownable {
         if (_adr.send(withdrawingAllowance[_adr]) == true) {
             totalAllowance = totalAllowance.sub(withdrawingAllowance[_adr]);
             withdrawingAllowance[_adr] = 0;
+            emit WithdrawMoney(_adr, totalAllowance, block.timestamp);
             return true;
         } else {
             allowance[_adr] = allowance[_adr].add(withdrawingAllowance[_adr]);
@@ -64,21 +82,22 @@ contract Wallet is Ownable {
         }
     }
 
-    //@dev By calling this function, all the ledger and logic in the contract are lost. Only money is transferred to another address.
+    /**
+     *@title When smth happened, change the external wallet addres to the new one. 
+     *@dev This is owner-only, which is DAA only
+     *@notice By calling this function, all the ledger and logic in the contract are lost. 
+     Only money is transferred to another address.
+     */
     function changeWalletAddress(address _newAdr) public onlyOwner returns (bool) {
         selfdestruct(_newAdr);
         return true;
     }
-
-    //@title Getter for the individual contribution.
+    
+    /**
+     *@title Getter for the individual contribution.
+     *@param _proposalID the reference ID of proposals
+     */
     function getIndividualContribution(address _adr) public view onlyOwner returns (uint256) {
         return individualContribution[_adr];
-    }
-
-
-    //@dev If some extra money received. Well, thank you.
-    function() public payable {
-        totalBalance = totalBalance.add(msg.value);
-        individualContribution[msg.sender] = individualContribution[msg.sender].add(msg.value);
     }
 }

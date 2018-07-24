@@ -1,5 +1,5 @@
 /**
- * Test for IcoToken
+ * Test for Membership management
  *
  * @author Validity Labs AG <info@validitylabs.org>
  */
@@ -11,6 +11,7 @@ import { request } from 'https';
 // const IcoToken = artifacts.require('./IcoToken');
 
 const Membership = artifacts.require('./Membership.sol');
+const ProposalManager = artifacts.require('./ProposalManager.sol');
 const Accessible = artifacts.require('./Accessible.sol');
 const DAOToken = artifacts.require('./DAOToken.sol');
 
