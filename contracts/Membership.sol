@@ -67,18 +67,29 @@ contract Membership is Accessible, Ownable {
         emit ChangeInWhitelister(_whitelisterTwo, true);
         emit ChangeInMembershipStatus(delegate, uint(membershipStatus.isMember));
     }
-
-    function updateContractAddress(address _newProposal, address _newTreasury) public onlyOwner {
-        require(_newProposal != 0x0 || _newTreasury != 0x0);
-
-        if (_newProposal != 0x0) {
-            proposalGate = ProposalInterface(_newProposal);
-        }
-
-        if (_newTreasury != 0x0) {
-            treasuryAdr = _newTreasury;
-        }
+    // new function for update proposals
+    function updateProposalContractAddress(address _newProposal) public onlyOwner {
+        require(_newProposal != 0x0);
+        proposalGate = ProposalInterface(_newProposal);
     }
+
+    function updateTreasuryAddress(address _newTreasury) public onlyOwner {
+        require(_newTreasury != 0x0);
+        treasuryAdr = _newTreasury;
+    }
+
+    // // // separate the update contract function into two small ones 
+    // function updateContractAddress(address _newProposal, address _newTreasury) public onlyOwner {
+    //     require(_newProposal != 0x0 || _newTreasury != 0x0);
+
+    //     if (_newProposal != 0x0) {
+    //         proposalGate = ProposalInterface(_newProposal);
+    //     }
+
+    //     if (_newTreasury != 0x0) {
+    //         treasuryAdr = _newTreasury;
+    //     }
+    // }
 
 
     /**

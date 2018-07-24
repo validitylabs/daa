@@ -8,17 +8,19 @@ import "./Wallet.sol";
 import "./ExternalWallet.sol";
 import "./Accessible.sol";
 import "./ProposalInterface.sol";
+import "./DAA.sol";
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol"; 
 import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol"; 
 
 contract Treasury is Ownable{
 
-    Wallet daoWallet;
-    ExternalWallet daoExternalWallet;
-    Accessible accessibleGate;
-    ProposalInterface proposalGate;
-    mapping(bytes32=>bool) cleared;
+    Wallet public daoWallet;
+    ExternalWallet public daoExternalWallet;
+    Accessible public accessibleGate;
+    ProposalInterface public proposalGate;
+    DAA public daa;
+    mapping(bytes32=>bool) public cleared;
 
     constructor(address _walletAdr, address _extWalletAdr, address _membershipAdr, address _proposalInterfaceAdr) public {
         daoWallet = Wallet(_walletAdr);
@@ -52,15 +54,26 @@ contract Treasury is Ownable{
         _;
     }
 
-    function updateContractAddress(address _newAccessible, address _newProposal) public onlyOwner {
-        require(_newAccessible != 0x0 || _newProposal != 0x0);
-        if (_newAccessible != 0x0) {
-            accessibleGate = Accessible(_newAccessible);
-        }
-        if (_newProposal != 0x0) {
-            proposalGate = ProposalInterface(_newProposal);
-        }
+    // new functions 
+    function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
+        require(_newAccessible != 0x0);
+        accessibleGate = Accessible(_newAccessible);
     }
+
+    function updateProposalContractAddress(address _newProposal) public onlyOwner {
+        require(_newProposal != 0x0);
+        proposalGate = ProposalInterface(_newProposal);
+    }
+    // // old function
+    // function updateContractAddress(address _newAccessible, address _newProposal) public onlyOwner {
+    //     require(_newAccessible != 0x0 || _newProposal != 0x0);
+    //     if (_newAccessible != 0x0) {
+    //         accessibleGate = Accessible(_newAccessible);
+    //     }
+    //     if (_newProposal != 0x0) {
+    //         proposalGate = ProposalInterface(_newProposal);
+    //     }
+    // }
 
 
     function startClearing(bytes32 _proposalID) uponProposalSuccess(_proposalID) expectProposalType(_proposalID, false) public returns (bool) {
@@ -111,10 +124,12 @@ contract Treasury is Ownable{
         if (_newInternalWalletAdr != 0x0) {
             daoWallet = Wallet(_newInternalWalletAdr);
             daoWallet.changeWalletAddress(_newInternalWalletAdr);
+            daa.updateInternalWallet(_newInternalWalletAdr);
         }
         if (_newExternalWalletAdr != 0x0) {
             daoExternalWallet = ExternalWallet(_newExternalWalletAdr);
             daoExternalWallet.changeWalletAddress(_newExternalWalletAdr);
+            daa.updateExternalWallet(_newExternalWalletAdr);
         }
         return true;
     }

@@ -43,35 +43,70 @@ contract DAA {
         _;
     }
 
+    // new function that updates one address per time
     function updateMembershipAddress(address _newAdr) proposalOnly external {
         membershipContract = Membership(_newAdr);
         // start to change other contracts, including treasury and gaManager
-        gaManagerContract.updateContractAddress(_newAdr,0x0);
-        treasuryContract.updateContractAddress(_newAdr,0x0);
-        membershipContract.updateContractAddress(0x0, _newAdr);
+        gaManagerContract.updateMembershipContractAddress(_newAdr);
+        treasuryContract.updateMembershipContractAddress(_newAdr);
+        proposalManagerContract.updateMembershipContractAddress(_newAdr);
+        // gaManagerContract.updateContractAddress(_newAdr,0x0);
+        // treasuryContract.updateContractAddress(_newAdr,0x0);
+        // membershipContract.updateContractAddress(0x0, _newAdr);
     }
 
-    function updateProposalManagerAddress(address _newAdr) proposalOnly external {
-        // proposalManagerContract = ProposalManager(_newAdr);
+    function updateProposalAddress(address _newAdr) proposalOnly external {
         proposalManagerContract = ProposalInterface(_newAdr);
-        // start to change other contracts, including proposalManager, gaManager, and treasury
-        gaManagerContract.updateContractAddress(0x0, _newAdr);
-        proposalManagerContract.updateContractAddress(_newAdr,0x0);
-        treasuryContract.updateContractAddress(0x0,_newAdr);
-        membershipContract.updateContractAddress(_newAdr, 0x0);
+        membershipContract.updateProposalContractAddress(_newAdr);
+        gaManagerContract.updateProposalContractAddress(_newAdr);
+        treasuryContract.updateProposalContractAddress(_newAdr);
+    }
+
+    function updateTreasuryAddreess(address _newAdr) proposalOnly external {
+
+        membershipContract.updateTreasuryAddress(_newAdr);
     }
 
     function updateGAAddress(address _newAdr) proposalOnly external {
         gaManagerContract = GAManager(_newAdr);
         // start to change contract addresses, including proposalManager
-        proposalManagerContract.updateContractAddress(0x0, _newAdr);
+        proposalManagerContract.updateGAContractAddress(_newAdr);
     }
+
+    function updateInternalWallet(address _newAdr) external {
+        require(msg.sender == address(treasuryContract));
+        walletAddress = _newAdr;
+    }
+
+    function updateExternalWallet(address _newAdr) external {
+        require(msg.sender == address(treasuryContract));
+        externalWalletAddress = _newAdr;
+    }
+
+    // // old functions - need to be replaced by the new one that separates the update functions 
+    // function updateMembershipAddress(address _newAdr) proposalOnly external {
+    //     membershipContract = Membership(_newAdr);
+    //     // start to change other contracts, including treasury and gaManager
+    //     gaManagerContract.updateContractAddress(_newAdr,0x0);
+    //     treasuryContract.updateContractAddress(_newAdr,0x0);
+    //     // membershipContract.updateContractAddress(0x0, _newAdr);
+    // }
+
+    // function updateProposalManagerAddress(address _newAdr) proposalOnly external {
+    //     // proposalManagerContract = ProposalManager(_newAdr);
+    //     proposalManagerContract = ProposalInterface(_newAdr);
+    //     // start to change other contracts, including proposalManager, gaManager, and treasury
+    //     gaManagerContract.updateContractAddress(0x0, _newAdr);
+    //     // proposalManagerContract.updateContractAddress(_newAdr,0x0);
+    //     treasuryContract.updateContractAddress(0x0,_newAdr);
+    //     // membershipContract.updateContractAddress(_newAdr, 0x0);
+    // }
 
     function finishDeployment(address _gaAdr) external {
         require(alreadyBeCalledOnce == false);
         alreadyBeCalledOnce = true;
         proposalManagerContract.linkContract(_gaAdr, address(this));
-        membershipContract.updateContractAddress(address(proposalManagerContract), 0x0);
+        membershipContract.updateProposalContractAddress(address(proposalManagerContract));
     }
 
     //@TODO More things may happen in case of dissolution?

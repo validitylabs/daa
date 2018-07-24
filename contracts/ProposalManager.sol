@@ -148,15 +148,25 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         daaGate = DAAInterface(_daa);
     }
 
-    function updateContractAddress(address _newAccessible, address _newGA) public onlyOwner {
-        require(_newAccessible != 0x0 || _newGA != 0x0);
-        if (_newAccessible != 0x0) {
-            accessibleGate = Accessible(_newAccessible);
-        }
-        if (_newGA != 0x0) {
-            gaManager = GAManager(_newGA);
-        }
+    function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
+        require(_newAccessible != 0x0);
+        accessibleGate = Accessible(_newAccessible);
     }
+
+    function updateGAContractAddress(address _newGA) public onlyOwner {
+        require(_newGA != 0x0);
+        gaManager = GAManager(_newGA);
+    }
+    // // old functions 
+    // function updateContractAddress(address _newAccessible, address _newGA) public onlyOwner {
+    //     require(_newAccessible != 0x0 || _newGA != 0x0);
+    //     if (_newAccessible != 0x0) {
+    //         accessibleGate = Accessible(_newAccessible);
+    //     }
+    //     if (_newGA != 0x0) {
+    //         gaManager = GAManager(_newGA);
+    //     }
+    // }
 
     /**
      *@title Create a normal proposal

@@ -80,15 +80,27 @@ contract GAManager is Ownable {
         currentHashOfStatutes = _initialHash;
     }
 
-    function updateContractAddress(address _newAccessible, address _newProposal) public onlyOwner {
-        require(_newAccessible != 0x0 || _newProposal != 0x0);
-        if (_newAccessible != 0x0) {
-            accessibleGate = Accessible(_newAccessible);
-        }
-        if (_newProposal != 0x0) {
-            proposalGate = ProposalInterface(_newProposal);
-        }
+    // new function for update proposals
+    function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
+        require(_newAccessible != 0x0);
+        accessibleGate = Accessible(_newAccessible);
     }
+
+    function updateProposalContractAddress(address _newProposal) public onlyOwner {
+        require(_newProposal != 0x0);
+        proposalGate = ProposalInterface(_newProposal);
+    }
+
+    // // separate the update contract function into two small ones 
+    // function updateContractAddress(address _newAccessible, address _newProposal) public onlyOwner {
+    //     require(_newAccessible != 0x0 || _newProposal != 0x0);
+    //     if (_newAccessible != 0x0) {
+    //         accessibleGate = Accessible(_newAccessible);
+    //     }
+    //     if (_newProposal != 0x0) {
+    //         proposalGate = ProposalInterface(_newProposal);
+    //     }
+    // }
 
     function addDelegateCandidate(address _adr) beforeGAstarts external proposalOnly {
         require(listOfCandidateAddress[_adr] == 0);
