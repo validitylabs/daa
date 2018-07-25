@@ -12,8 +12,9 @@ contract Wallet is Ownable {
     using SafeMath for uint256;
 
     uint256 public totalBalance;
-    mapping(address=>uint256) public individualContribution;     // This mapping can be made from a hashed address to the amount (in order to hide sensitive information)
     uint256 public totalAllowance;
+    // mapping(address=>uint256) public lastPaidYear;
+    mapping(address=>uint256) public individualContribution;     // This mapping can be made from a hashed address to the amount (in order to hide sensitive information)
     mapping(address=>uint256) public allowance;
     mapping(address=>uint256) public withdrawingAllowance;
 
@@ -92,7 +93,7 @@ contract Wallet is Ownable {
         selfdestruct(_newAdr);
         return true;
     }
-    
+
     /**
      *@title Getter for the individual contribution.
      *@param _proposalID the reference ID of proposals

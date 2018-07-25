@@ -4,11 +4,13 @@
 // const fs            = require('fs');
 // const cnf           = require('../../config/contract-ico-dividend.json');
 // const BigNumber     = require('bignumber.js');
-//const IcoToken      = artifacts.require('./ico/dividend/IcoToken.sol');
-//const IcoCrowdsale  = artifacts.require('./ico/dividend/IcoCrowdsale.sol');
-const DAOToken      = artifacts.require('./DAOToken.sol');
-const Membership    = artifacts.require('./Membership.sol');
+const Membership = artifacts.require('./Membership.sol');
+const ProposalManager = artifacts.require('./ProposalManager.sol');
+const GAManager = artifacts.require('./GAManager.sol');
 const Accessible = artifacts.require('./Accessible.sol');
+const Wallet = artifacts.require('./Wallet.sol');
+const ExternalWallet = artifacts.require('./ExternalWallet.sol');
+const Treasury = artifacts.require('./Treasury.sol');
 // const sh            = require('shelljs');
 
 module.exports = function (deployer, network, accounts) {
@@ -47,7 +49,14 @@ module.exports = function (deployer, network, accounts) {
     deployer.deploy(Membership, delegate, whitelister1, whitelister2, {from: initiator}). then(() => {
         return Membership.deployed().then((MembershipInstance) => {
             console.log(' Membership contract address: ', MembershipInstance.address);
-        })
+            // 1 week = 7 * 24 * 60 * 60 = 604800 seconds
+            // 2 weeks = 2 * 604800 = 1209600 seconds
+            return deployer.deploy(ProposalManager, MembershipInstance.address, 1209600, 604800, {from: initiator}).then(() => {
+                return ProposalManager.deployed().then((ProposalManagerInstance) =>{
+                    console.log(' ProposalManager contract address: ', ProposalManager.address);
+                });
+            });
+        });
     });
 
 

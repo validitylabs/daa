@@ -189,6 +189,8 @@ To make an ordinary proposal, it follows:
 ![Imgur](https://i.imgur.com/y5yI5Ex.png)Is it possible to be destructed before it’s concluded by the owner?
 External donation can only be accepted when the proposal is created (open and before it becomes concludable nor concluded). No need to be votable.
 
+The payout function for external funds is freezed or not during the 
+
 ### General Assembly
 
 There are two types of General Assembly (GA). One is the ordinary GA, set by the delegate; The other one is the extraordinary GA, set by a proposal. Such proposal should be initiated by any member in case of emergency and voted by all members. 
@@ -237,6 +239,8 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 - [ ] Check the ProposalManager. If moving some structs and quorum calculation to TallyClerkLib and ActionLib is reasonable?
 
 - [ ] Hash important information for function inputs and outputs.
+
+- [ ] Currently there's no punishment for members who do not pay their membership fee on time. Some possible action could be: disable the account until the accumulated missing fee is paid.
 
 - [ ] **Fix the proposeDelegateCandidancy: ProposalManager.sol (line 369)**
 
