@@ -74,34 +74,41 @@ contract GAManager is Ownable {
         _;
     }
 
+    /**
+     *@title Construct a GA Manger, who holds the information of current statutes
+     *@param _membershipAdr The address of membership contract
+     *@param _proposalInterfaceAdr The address of proposal manager contract
+     *@param _initialHash The hash of current statutes.
+     */
     constructor(address _membershipAdr, address _proposalInterfaceAdr, bytes32 _initialHash) public {
         accessibleGate = Accessible(_membershipAdr);
         proposalGate = ProposalInterface(_proposalInterfaceAdr);
         currentHashOfStatutes = _initialHash;
     }
 
-    // new function for update proposals
+    /**
+     *@title Update the address of the membership contract
+     *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
+     *@param _newAccessible The address of the new membership contract.
+     */
     function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
         require(_newAccessible != 0x0);
         accessibleGate = Accessible(_newAccessible);
     }
 
+    /**
+     *@title Update address of the proposal manager contract
+     *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
+     *@param _newProposal The address of the new proposal manager contract.
+     */
     function updateProposalContractAddress(address _newProposal) public onlyOwner {
         require(_newProposal != 0x0);
         proposalGate = ProposalInterface(_newProposal);
     }
 
-    // // separate the update contract function into two small ones 
-    // function updateContractAddress(address _newAccessible, address _newProposal) public onlyOwner {
-    //     require(_newAccessible != 0x0 || _newProposal != 0x0);
-    //     if (_newAccessible != 0x0) {
-    //         accessibleGate = Accessible(_newAccessible);
-    //     }
-    //     if (_newProposal != 0x0) {
-    //         proposalGate = ProposalInterface(_newProposal);
-    //     }
-    // }
-
+    /**
+     *@title 
+     */
     function addDelegateCandidate(address _adr) beforeGAstarts external proposalOnly {
         require(listOfCandidateAddress[_adr] == 0);
         // list starts from 0

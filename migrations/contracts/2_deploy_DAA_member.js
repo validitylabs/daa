@@ -4,13 +4,16 @@
 // const fs            = require('fs');
 // const cnf           = require('../../config/contract-ico-dividend.json');
 // const BigNumber     = require('bignumber.js');
+const cnf           = require('../../config/contract-member.json');
 const Membership = artifacts.require('./Membership.sol');
+const TallyClerkLib = artifacts.require('./TallyClerkLib.sol');
 const ProposalManager = artifacts.require('./ProposalManager.sol');
 const GAManager = artifacts.require('./GAManager.sol');
 const Accessible = artifacts.require('./Accessible.sol');
 const Wallet = artifacts.require('./Wallet.sol');
 const ExternalWallet = artifacts.require('./ExternalWallet.sol');
 const Treasury = artifacts.require('./Treasury.sol');
+const DAA = artifacts.require('./DAA.sol');
 // const sh            = require('shelljs');
 
 module.exports = function (deployer, network, accounts) {
@@ -29,31 +32,102 @@ module.exports = function (deployer, network, accounts) {
     const delegate      = accounts[1];
     const whitelister1  = accounts[2];
     const whitelister2  = accounts[3];
-    const requester     = accounts[5];
-    const newWhiteLister = accounts[6];
-    const others        = accounts[9];
+    const timelimitGADate = cnf.timelimitGADate;
+    const timeLimitExpelMember = cnf.timeLimitExpelMember;
+    const initialHashedStatute = cnf.initialHashedStatute;
 
     console.log("Start deploying");
-    // @dev Code for deployer when there's token.
-    // deployer.deploy(DAOToken, 'LongNameForDAAS', 'DAAS', 250000000000000000, {from: initiator}).then(() => {
-    //     return DAOToken.deployed().then((DAOTokenInstance) => {
-    //         console.log(' DAOTOken contract address: ', DAOTokenInstance.address);
-    //         return deployer.deploy(Membership, DAOTokenInstance.address, whitelister1, whitelister2, {from: initiator}).then(() => {
-    //             return Membership.deployed().then((MembershipInstance) => {
-    //                 console.log(' Membership contract address: ', MembershipInstance.address);
-    //             });
-    //         });
-    //     });
-    // });
     
     deployer.deploy(Membership, delegate, whitelister1, whitelister2, {from: initiator}). then(() => {
         return Membership.deployed().then((MembershipInstance) => {
             console.log(' Membership contract address: ', MembershipInstance.address);
-            // 1 week = 7 * 24 * 60 * 60 = 604800 seconds
-            // 2 weeks = 2 * 604800 = 1209600 seconds
-            return deployer.deploy(ProposalManager, MembershipInstance.address, 1209600, 604800, {from: initiator}).then(() => {
-                return ProposalManager.deployed().then((ProposalManagerInstance) =>{
-                    console.log(' ProposalManager contract address: ', ProposalManager.address);
+            return deployer.deploy(TallyClerkLib).then(() => {
+                return deployer.link(TallyClerkLib, [ProposalManager, GAManager]).then(() => {
+                    // 1 week = 7 * 24 * 60 * 60 = 604800 seconds
+                    // 2 weeks = 2 * 604800 = 1209600 seconds
+                    return deployer.deploy(
+                        ProposalManager, 
+                        MembershipInstance.address, 
+                        timelimitGADate, 
+                        timeLimitExpelMember, 
+                        {from: initiator}
+                    ).then(() => {
+                        return ProposalManager.deployed().then((ProposalManagerInstance) =>{
+                            console.log(' ProposalManager contract address: ', ProposalManagerInstance.address);
+                            return deployer.deploy(
+                                GAManager, 
+                                MembershipInstance.address, 
+                                ProposalManagerInstance.address, 
+                                initialHashedStatute, 
+                                {from: initiator}
+                            ).then(() => {
+                                return GAManager.deployed().then((GAManagerInstance) => {
+                                    console.log(' GAManager contract address: ', GAManagerInstance.address);
+                                    return deployer.deploy(Wallet, {from: initiator}).then(() => {
+                                        return Wallet.deployed().then((WalletInstance) => {
+                                            console.log(' Internal Wallet contract address: ', WalletInstance.address);
+                                            return deployer.deploy(
+                                                ExternalWallet, 
+                                                ProposalManagerInstance.address, 
+                                                {from: initiator}
+                                            ).then(() => {
+                                                return ExternalWallet.deployed().then((ExternalWalletInstance) => {
+                                                    console.log(' External Wallet contract address: ', ExternalWalletInstance.address);
+                                                    return deployer.deploy(
+                                                        Treasury, 
+                                                        WalletInstance.address, 
+                                                        ExternalWalletInstance.address, 
+                                                        MembershipInstance.address, 
+                                                        ProposalManagerInstance.address, 
+                                                        {from: initiator}
+                                                    ).then(() => {
+                                                        return Treasury.deployed().then((TreasuryInstance) => {
+                                                            console.log(' Treasury contract address: ', TreasuryInstance.address);
+                                                            return WalletInstance.transferOwnership(TreasuryInstance.address, {from: initiator}).then(() => {
+                                                                console.log('       Wallet changed its owner to the Treasury contract');
+                                                                return ExternalWalletInstance.transferOwnership(TreasuryInstance.address, {from: initiator}).then(() => {
+                                                                    console.log('       External Wallet changed its owner to the Treasury contract');
+                                                                    return deployer.deploy(
+                                                                        DAA, 
+                                                                        MembershipInstance.address, 
+                                                                        ProposalManagerInstance.address,
+                                                                        GAManagerInstance.address,
+                                                                        TreasuryInstance.address,
+                                                                        WalletInstance.address,
+                                                                        ExternalWalletInstance.address,
+                                                                        {from: initiator}
+                                                                    ).then(() => {
+                                                                        return DAA.deployed().then((DAAInstance) => {
+                                                                            console.log(' DAA contract address: ', DAAInstance.address);
+                                                                            return MembershipInstance.transferOwnership(DAAInstance.address, {from: initiator}).then(() => {
+                                                                                console.log(' The MembershipManager changed its owner to the DAA');
+                                                                                return ProposalManagerInstance.transferOwnership(DAAInstance.address, {from: initiator}).then(() => {
+                                                                                    console.log(' The ProposalManager changed its owner to the DAA');
+                                                                                    return GAManagerInstance.transferOwnership(DAAInstance.address, {from: initiator}).then(() => {
+                                                                                        console.log(' The GAManager changed its owner to the DAA');
+                                                                                        return TreasuryInstance.transferOwnership(DAAInstance.address, {from: initiator}).then(() => {
+                                                                                            console.log(' The Treasury changed its owner to the DAA');
+                                                                                            return DAAInstance.finishDeployment(GAManagerInstance.address, {from: initiator}).then(() => {
+                                                                                                console.log('       The DAA contract is set');
+                                                                                            });
+                                                                                        });
+                                                                                    });
+                                                                                });
+                                                                            });
+                                                                        });
+                                                                    });
+                                                                });
+                                                            });
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
                 });
             });
         });
@@ -64,7 +138,7 @@ module.exports = function (deployer, network, accounts) {
     // @TODO: reanimate writing of JS settings files
     // deployer.deploy(IcoToken).then(() => {
     //     return IcoToken.deployed().then((icoTokenInstance) => {
-    //         return icoTokenInstance;
+    //         return icoTokenInstance; 
     //     }).then((icoTokenInstance) => {
     //         deployer.deploy(
     //             IcoCrowdsale,

@@ -26,7 +26,14 @@ contract DAA {
     bool public alreadyBeCalledOnce;
     bool public active;
 
-
+    /**
+     *@title Form a DAA with contracts that manages groups of functionalities.
+     *@param _membership The address of Membership contract
+     *@param _proposalManager The address of the proposal manager contract
+     *@param _GA The address of the GA contract
+     *@param _wallet The address of the internal wallet contract
+     *@param _externalWallet The address of the external wallet contract
+     */
     constructor(address _membership, address _proposalManager, address _GA, address _treasury, address _wallet, address _externalWallet) public {
         membershipContract = Membership(_membership);
         // proposalManagerContract = ProposalManager(_proposalManager);
@@ -102,7 +109,7 @@ contract DAA {
     //     // membershipContract.updateContractAddress(_newAdr, 0x0);
     // }
 
-    function finishDeployment(address _gaAdr) external {
+    function finishDeployment(address _gaAdr) public {
         require(alreadyBeCalledOnce == false);
         alreadyBeCalledOnce = true;
         proposalManagerContract.linkContract(_gaAdr, address(this));

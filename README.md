@@ -206,11 +206,12 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
 1. Finished deployment for all the concrete contracts.
    1. Membership 
-   2. ProposalManager
-   3. GAManager
-   4. Wallet
-   5. ExternalWallet
-   6. Treasury
+   2.  (TalleyClerk LIbrary)
+   3. ProposalManager
+   4. GAManager
+   5. Wallet
+   6. ExternalWallet
+   7. Treasury
 2. Transfer ownership of Wallet and ExternalWallet from deployer to Treasury.
 3. Finished deployment for DAA
 4. Transfer ownership from deployer to DAA contract.
