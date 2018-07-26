@@ -101,4 +101,11 @@ contract Wallet is Ownable {
     function getIndividualContribution(address _adr) public view onlyOwner returns (uint256) {
         return individualContribution[_adr];
     }
+
+    /**
+     *@title Getter for current balance
+     */
+    function getTotalBalance() public view returns (uint256, uint256) {
+        return (totalBalance, address(this).balance);
+    }
 }

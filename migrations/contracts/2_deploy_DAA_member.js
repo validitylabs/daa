@@ -107,7 +107,7 @@ module.exports = function (deployer, network, accounts) {
                                                                                         console.log(' The GAManager changed its owner to the DAA');
                                                                                         return TreasuryInstance.transferOwnership(DAAInstance.address, {from: initiator}).then(() => {
                                                                                             console.log(' The Treasury changed its owner to the DAA');
-                                                                                            return DAAInstance.finishDeployment(GAManagerInstance.address, {from: initiator}).then(() => {
+                                                                                            return DAAInstance.finishDeployment({from: initiator}).then(() => {
                                                                                                 console.log('       The DAA contract is set');
                                                                                             });
                                                                                         });

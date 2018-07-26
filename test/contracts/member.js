@@ -94,8 +94,6 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         // const AccessibleInstance = Accessible.at(membershipInstance.address);
         let whitelister1_account = await membershipInstance.testFuncGetWhitelister.call(0);
         let whitelister2_account = await membershipInstance.testFuncGetWhitelister.call(1);
-        // let whitelister1_account = await membershipInstance.whitelisterList.call(0);
-        // let whitelister2_account = await membershipInstance.whitelisterList.call(1);
         assert.equal(whitelister1_account, whitelister1, 'Whitelister 1 is not as expected.');
         assert.equal(whitelister2_account, whitelister2, 'Whitelister 2 is not as expected.');
     });
@@ -146,12 +144,46 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         const events1 = getEvents(tx1, 'ChangeInMembershipStatus');
         assert.equal(events1[0].accountAddress, requester, 'Account address is wrong');
         assert.equal(events1[0].currentStatus, 3, 'The requester is currently been whitelisted by two');
+        
+        let requesterIsWhitelistedByTwo = await membershipInstance.checkIsWhitelistedByTwo.call(requester);
+        assert.isTrue(requesterIsWhitelistedByTwo, 'The requester has not yet been whitelisted by two');
     });
 
     it('should successfully pay the membership fee', async () => {
         const payment = web3.toWei(1, 'ether');
-        await expectThrow(TreasuryInstance.payNewMembershipFee({from: others, value: payment}))
-        // await TreasuryInstance.payNewMembershipFee({from: requester, value: payment});
+
+        await expectThrow(TreasuryInstance.payNewMembershipFee({
+            from: others, 
+            value: 10000
+        }));
+        await expectThrow(TreasuryInstance.payNewMembershipFee({
+            from: others, 
+            value: payment
+        }));
+
+        // console.log(payment);
+        let paymentReachesDesiredValue = await membershipInstance.reachDesiredValue.call(payment);
+        assert.isTrue(paymentReachesDesiredValue, 'The payment is not enough');
+        
+        // let addMember = await membershipInstance.addNewMember(requester, {from: TreasuryInstance.address});
+        // assert.isTrue(addMember, 'The member was not added successfully');
+
+        let totalBalanceBaforePayment = await WalletInstance.getTotalBalance.call();
+        // console.log(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber());
+        assert.equal(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber(), 'The balance value does not match');
+        
+        // let treasuryAdrForMembershipContract = await membershipInstance.getTreasuryAdr.call();
+        // console.log(treasuryAdrForMembershipContract);
+
+        const tx2 = await TreasuryInstance.payNewMembershipFee({
+            from: requester, 
+            value: payment, 
+            gas: 700000
+        });
+        
+        let totalBalanceAfterPayment = await WalletInstance.getTotalBalance.call();
+        // console.log(totalBalanceAfterPayment[0].toNumber(), totalBalanceAfterPayment[1].toNumber());
+        assert.equal(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber(), 'The balance value does not match');
     });
 
     

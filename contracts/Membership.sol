@@ -209,9 +209,13 @@ contract Membership is Accessible, Ownable {
 
     function addNewMember(address _newMember) public returns (bool) {   //treasuryOnly
         require(msg.sender == treasuryAdr);
-        require(membershipList[msg.sender] == membershipStatus.whitelistedByTwo);
+        require(membershipList[_newMember] == membershipStatus.whitelistedByTwo);
         membershipList[_newMember] = membershipStatus.isMember;
         headcount++;
+    }
+
+    function getTreasuryAdr() public view returns (address) {
+        return treasuryAdr;
     }
     
     // /**

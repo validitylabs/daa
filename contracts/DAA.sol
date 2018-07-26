@@ -70,7 +70,6 @@ contract DAA {
     }
 
     function updateTreasuryAddreess(address _newAdr) proposalOnly external {
-
         membershipContract.updateTreasuryAddress(_newAdr);
     }
 
@@ -109,11 +108,12 @@ contract DAA {
     //     // membershipContract.updateContractAddress(_newAdr, 0x0);
     // }
 
-    function finishDeployment(address _gaAdr) public {
+    function finishDeployment() public {
         require(alreadyBeCalledOnce == false);
         alreadyBeCalledOnce = true;
-        proposalManagerContract.linkContract(_gaAdr, address(this));
+        proposalManagerContract.linkContract(address(gaManagerContract), address(this));
         membershipContract.updateProposalContractAddress(address(proposalManagerContract));
+        membershipContract.updateTreasuryAddress(address(treasuryContract));
     }
 
     //@TODO More things may happen in case of dissolution?

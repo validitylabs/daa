@@ -213,8 +213,8 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
    6. ExternalWallet
    7. Treasury
 2. Transfer ownership of Wallet and ExternalWallet from deployer to Treasury.
-3. Finished deployment for DAA
-4. Transfer ownership from deployer to DAA contract.
+3. Transfer ownership from deployer to DAA contract.
+4. Finished deployment for DAA
 5. Call finishDeployment function in DAA contract.
 
 ### Steps to set up a GA
