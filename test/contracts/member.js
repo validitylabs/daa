@@ -14,7 +14,7 @@ import { it } from 'mocha';
 const Membership = artifacts.require('./Membership.sol');
 const ProposalManager = artifacts.require('./ProposalManager.sol');
 const GAManager = artifacts.require('./GAManager.sol');
-const Accessible = artifacts.require('./Accessible.sol');
+// const Accessible = artifacts.require('./Accessible.sol');
 const Wallet = artifacts.require('./Wallet.sol');
 const ExternalWallet = artifacts.require('./ExternalWallet.sol');
 const Treasury = artifacts.require('./Treasury.sol');
@@ -51,13 +51,23 @@ contract('Membership Test (without DAO Token)', (accounts) => {
 
     // let DAOTokenInstance;
     let membershipInstance;
+    let TreasuryInstance;
+    let WalletInstance;
+    let ExternalWalletInstance;
+    let ProposalManagerInstance;
+    let GAManagerInstance;
+
 
     beforeEach(async () => {
         membershipInstance    = await Membership.deployed();
-        console.log('The deployed membership instance is at: ' + membershipInstance.address);
         // const  DAOTokenAddress  = await membershipInstance.nativeToken();
         // // console.log('The deployed token instance is at address: ' + DAOTokenAddress);
         // DAOTokenInstance        = await DAOToken.at(DAOTokenAddress);
+        TreasuryInstance = await Treasury.deployed();
+        WalletInstance = await Wallet.deployed();
+        ExternalWalletInstance = await ExternalWallet.deployed();
+        ProposalManagerInstance = await ProposalManager.deployed();
+        GAManagerInstance = await GAManager.deployed();
     });
 
     /**
@@ -138,6 +148,11 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         assert.equal(events1[0].currentStatus, 3, 'The requester is currently been whitelisted by two');
     });
 
+    it('should successfully pay the membership fee', async () => {
+        const payment = web3.toWei(1, 'ether');
+        await expectThrow(TreasuryInstance.payNewMembershipFee({from: others, value: payment}))
+        // await TreasuryInstance.payNewMembershipFee({from: requester, value: payment});
+    });
 
     
     
