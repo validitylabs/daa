@@ -7,6 +7,7 @@
 import {expectThrow, waitNDays, getEvents, BigNumber, increaseTimeTo} from './helpers/tools';
 import { getNegativePatternsAsPositive } from '../../node_modules/fast-glob/out/managers/tasks';
 import { request } from 'https';
+import { it } from 'mocha';
 
 // const DAOToken = artifacts.require('./DAOToken.sol');˚
 
@@ -70,15 +71,15 @@ contract('Membership Test (without DAO Token)', (accounts) => {
 
         assert.equal(delegate, currentDelegate, 'Current delegate does not match with the contract initiator.');
     });
-
+    
     it('should have delegate as membershipStatus.isMember', async()=> {
-        await expectThrow(membershipInstance.requestMembership({from: initiator}));
-        const tx1 = await membershipInstance.requestMembership({from: requester});
-        const events1 = getEvents(tx1, 'ChangeInMembershipStatus');
-        assert.equal(events1[0].accountAddress, requester, 'Account address is wrong');
-        assert.equal(events1[0].currentStatus, 1, 'The account is not requesting membership');
+        const isDelegate = await membershipInstance.checkIsDelegate.call(delegate, {from: others});
+        const isMember = await membershipInstance.checkIsMember.call(delegate, {from: initiator});
+        
+        assert.isTrue(isDelegate, 'Current delegate cannot be checked with checkIsDelegate function');
+        assert.isTrue(isMember, 'Current delegate is not a member');
     });
-
+    
     it('should have two whitelister with correct account addresses', async () => {
         // const AccessibleInstance = Accessible.at(membershipInstance.address);
         let whitelister1_account = await membershipInstance.testFuncGetWhitelister.call(0);
@@ -88,18 +89,18 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         assert.equal(whitelister1_account, whitelister1, 'Whitelister 1 is not as expected.');
         assert.equal(whitelister2_account, whitelister2, 'Whitelister 2 is not as expected.');
     });
-
+    
     it('should always have minimum two whitelisters', async () => {
-        await expectThrow(membershipInstance.removeWhitelister(newWhiteLister, {from:initiator}));
-        await expectThrow(membershipInstance.removeWhitelister(newWhiteLister, {from:whitelister1}));
-        await expectThrow(membershipInstance.removeWhitelister(whitelister1, {from:initiator}));
+        await expectThrow(membershipInstance.removeWhitelister(newWhiteLister, {from: initiator}));
+        await expectThrow(membershipInstance.removeWhitelister(newWhiteLister, {from: whitelister1}));
+        await expectThrow(membershipInstance.removeWhitelister(whitelister1, {from: initiator}));
     });
-
+    
     it('should only allow delegate to add new white lister, if the person is not yet a whitelister', async () => {
-        await expectThrow(membershipInstance.addWhitelister(whitelister1, {from:initiator}));
-        await expectThrow(membershipInstance.addWhitelister(newWhiteLister, {from:whitelister1}));
+        await expectThrow(membershipInstance.addWhitelister(whitelister1, {from: initiator}));
+        await expectThrow(membershipInstance.addWhitelister(newWhiteLister, {from: whitelister1}));
         
-        const tx1 = await membershipInstance.addWhitelister(newWhiteLister, {from:delegate});
+        const tx1 = await membershipInstance.addWhitelister(newWhiteLister, {from: delegate});
         const events1 = getEvents(tx1, 'ChangeInWhitelister');
         assert.isTrue(events1[0].removedOrAdded, 'Failed to add the new user');
         assert.equal(events1[0].concernedWhitelister, newWhiteLister, 'User account mismatch');
@@ -108,6 +109,38 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         // console.log(whitelistersNumber.toNumber());
         assert.equal(whitelistersNumber, 3, 'The number of whitelisters is not as expected');
     });
+
+    it('should initiate membership request', async () => {
+        const tx1 = await membershipInstance.requestMembership({from: requester});
+        const events1 = getEvents(tx1, 'ChangeInMembershipStatus');
+        assert.equal(events1[0].accountAddress, requester, 'Account address is wrong');
+        assert.equal(events1[0].currentStatus, 1, 'The account is now requesting membership');
+    });
+    
+    it('should be approved by the first whitelister, can only be approved by one whitelister once', async() => {
+        const tx1 = await membershipInstance.whitelistMember(requester, {from: whitelister1});
+        const events1 = getEvents(tx1, 'ChangeInMembershipStatus');
+        assert.equal(events1[0].accountAddress, requester, 'Account address is wrong');
+        assert.equal(events1[0].currentStatus, 2, 'The requester is not sucessfully approved by the whitelister1');
+    });
+
+    it('should reject the approval if the use is not requesting membership',  async () => {
+        await expectThrow(membershipInstance.whitelistMember(delegate, {from: whitelister1}));
+        await expectThrow(membershipInstance.whitelistMember(others, {from: whitelister2}));
+    });
+    
+    it('should be approved by the second whitelister, this second one cannot be the same as the first one', async() => {
+        await expectThrow(membershipInstance.whitelistMember(requester, {from: whitelister1}));
+
+        const tx1 = await membershipInstance.whitelistMember(requester, {from: whitelister2});
+        const events1 = getEvents(tx1, 'ChangeInMembershipStatus');
+        assert.equal(events1[0].accountAddress, requester, 'Account address is wrong');
+        assert.equal(events1[0].currentStatus, 3, 'The requester is currently been whitelisted by two');
+    });
+
+
+    
+    
 
 
     // it('should instantiate the Ico token correctly', async () => {

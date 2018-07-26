@@ -61,7 +61,7 @@ contract Membership is Accessible, Ownable {
         whitelisterList[1] = _whitelisterTwo;
         // whitelisterList.push(_whitelisterOne);
         // whitelisterList.push(_whitelisterTwo);
-        membershipList[msg.sender] = membershipStatus.isMember;     // By default, the delegate is also a member.
+        membershipList[_delegate] = membershipStatus.isMember;     // By default, the delegate is also a member.
         emit ChangeInDelegate(delegate, true);
         emit ChangeInWhitelister(_whitelisterOne, true);
         emit ChangeInWhitelister(_whitelisterTwo, true);
