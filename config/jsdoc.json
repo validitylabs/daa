@@ -4,6 +4,7 @@
     "source": {
         "include": [
             "test/contracts/member.js",
+            "test/contracts/proposals.js"
         ]
     },
     "opts": {

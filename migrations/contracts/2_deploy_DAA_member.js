@@ -4,7 +4,7 @@
 // const fs            = require('fs');
 // const cnf           = require('../../config/contract-ico-dividend.json');
 // const BigNumber     = require('bignumber.js');
-const cnf           = require('../../config/contract-member.json');
+const cnf           = require('../../config/contract-daa.json');
 const Membership = artifacts.require('./Membership.sol');
 const TallyClerkLib = artifacts.require('./TallyClerkLib.sol');
 const ProposalManager = artifacts.require('./ProposalManager.sol');

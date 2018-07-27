@@ -4,7 +4,7 @@
  * @author Validity Labs AG <info@validitylabs.org>
  */
 
-import {expectThrow, waitNDays, getEvents, BigNumber, increaseTimeTo, duration } from './helpers/tools';
+import {expectThrow, forwardNDays, getEvents, BigNumber, increaseTimeTo, duration, latestTime } from './helpers/tools';
 import { getNegativePatternsAsPositive } from '../../node_modules/fast-glob/out/managers/tasks';
 import { request } from 'https';
 import { it } from 'mocha';
@@ -154,7 +154,7 @@ contract('Membership Test (without DAO Token)', (accounts) => {
     
     it('should successfully pay the membership fee', async () => {
         const payment = web3.toWei(1, 'ether');
-        
+
         await expectThrow(TreasuryInstance.payNewMembershipFee({
             from: others, 
             value: 10000
@@ -175,8 +175,8 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         // console.log(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber());
         assert.equal(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber(), 'The balance value does not match');
         
-        let treasuryAdrForMembershipContract = await membershipInstance.treasuryAdr();
-        console.log(treasuryAdrForMembershipContract);
+        // let treasuryAdrForMembershipContract = await membershipInstance.treasuryAdr();
+        // console.log(treasuryAdrForMembershipContract);
         
         const tx2 = await TreasuryInstance.payNewMembershipFee({
             from: requester, 
@@ -219,18 +219,19 @@ contract('Membership Test (without DAO Token)', (accounts) => {
     });
 
     const firstProposalID = 'FirstID_123';
-    const durationBeforeVotingStarts = duration.minutes(5); // in seconds
     // Timestamp is in milliseconds... but time is in seconds
     it('should initiated a proposal', async () => {
         let money = 1; // wei
-        let startingTime = Date.now() + durationBeforeVotingStarts * 1000;
+        // console.log(latestTime(), ' Moment when proposal is set');
+        let startingTime = latestTime() + duration.minutes(5); // in seconds
+        // console.log(startingTime, ' Time when the proposal should start');
         let proposalDuration = duration.days(7);
         // The minimum duration is at least in 7 days.
         let proposalID = firstProposalID;
         let shortDescription = 'Interesting proposal';
         // Be careful, the description cannot exceed 32 bytes
 
-        assert(Date.now() < startingTime, 'The timing modifier should be passed.');
+        assert(latestTime() < startingTime, 'The timing modifier should be passed.');
 
         const tx1 = await ProposalManagerInstance.createProposal(
             proposalID,
@@ -246,18 +247,49 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         assert.equal(events1[0].DestinationAddress, requester, 'Account address is wrong');
         assert.equal(web3.toUtf8(events1[0].ID),proposalID, 'ID does not match');
     });
+    
+    it('should let a member vote abstain', async() => {
+        // /**
+        //  * The following functions are for testing functions waitNDays
+        //  */
+        // console.log('Current time is ', latestTime());
+        // await waitNDays(12);
+        // console.log('Current time is ', latestTime(), ' (waitNDays) ');
+        // await increaseTimeTo(latestTime() + duration.days(1));
+        // console.log('Current time is ', latestTime(), ' (IncreaseTimeTo) ');
+        // // check the current timestamp as well as the open interval.
 
-    it('should let members vote', async() => {
-        // fastforward 5 min to jump into the right time interval.
+        // fastforward 1 day to jump into the right time interval.
+        // console.log(latestTime(), ' Current time is ');
+        await forwardNDays(1);
+        // console.log(latestTime(), ' Current time is (After time leaping) ');
 
-        await waitNDays(1);
         let vote = 1;
-        const tx1 = await ProposalManagerInstance.voteForProposal(firstProposalID, 1, {from: newMember});
+        const tx1 = await ProposalManagerInstance.voteForProposal(firstProposalID, vote, {from: newMember});
         let actualVote = await ProposalManagerInstance.getVoteForProposal.call(firstProposalID, newMember);
-        console.log(actualVote.toNumber());
         assert.equal(actualVote.toNumber(), vote, 'The vote is not correct');
+        let proposalStatus = await ProposalManagerInstance.votesForEachProposal(firstProposalID);
+        assert.equal(proposalStatus[0], 1, 'It is not the first participant?');
+        assert.equal(proposalStatus[1], 0, 'The vote is taken as yes');
+        assert.equal(proposalStatus[2], 1, 'The vote is taken as abstain');
+        // assert.notEqual(proposalStatus[3][newMember])
     });
     
+    it('should let member change vote from abstain to yes', async() => {
+        let vote = 3; 
+        const tx1 = await ProposalManagerInstance.voteForProposal(firstProposalID, vote, {from: newMember});
+        let actualVote = await ProposalManagerInstance.getVoteForProposal.call(firstProposalID, newMember);
+        assert.equal(actualVote.toNumber(), vote, 'The vote is not correct');
+        let proposalStatus = await ProposalManagerInstance.votesForEachProposal(firstProposalID);
+        assert.equal(proposalStatus[0], 1, 'It is not the first participant?');
+        assert.equal(proposalStatus[1], 1, 'The vote is taken as yes');
+        assert.equal(proposalStatus[2], 0, 'The vote is taken as abstain');
+    });
+    
+    it('should let all other members vote', async() => {
+        let totalMemberNum = await membershipInstance.headcount();
+        console.log(totalMemberNum.toNumber(), ' headcount ');
+    });
 
 
     // it('should instantiate the Ico token correctly', async () => {

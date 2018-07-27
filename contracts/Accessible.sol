@@ -10,7 +10,7 @@ contract Accessible {
     enum membershipStatus {nonMember, requesting, whitelistedByOne, whitelistedByTwo, isMember}    // whitelister could also be a member. A delegate should be elected from a member.
     address public delegate;
     uint256 constant MINIMUM_WHITELISTER = 2;
-    uint256 internal whitelisterListLength = 2;       // By default there are (at least) two whitelisters.
+    uint256 public whitelisterListLength = 2;       // By default there are (at least) two whitelisters.
     mapping(uint256=>address) internal whitelisterList;
     mapping(address=>membershipStatus) internal membershipList;
 

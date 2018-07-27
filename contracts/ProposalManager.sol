@@ -324,11 +324,11 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         uint256 _answer
     ) 
         public 
-        // memberOnly 
-        // votable(_proposalID) 
+        memberOnly 
+        votable(_proposalID) 
         returns (bool) 
     {
-        // require(_answer < ANSWER_OPTIONS);   //TallyClerk.voteTicket{Abstain, No, Yes}
+        require(_answer < ANSWER_OPTIONS);   //TallyClerk.voteTicket{Abstain, No, Yes}
         votesForEachProposal[_proposalID].refreshResult(msg.sender, TallyClerkLib.voteTicket(_answer));
         // votesForEachProposal[_proposalID].participantList[msg.sender] = TallyClerkLib.voteTicket(_answer);
         // votesForEachProposal[_proposalID].participantNum++;

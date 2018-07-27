@@ -162,3 +162,13 @@ export const duration = {
         return val * this.days(365);
     }
 };
+
+// Returns the time of the last mined block in seconds
+export function latestTime() {
+    return web3.eth.getBlock('latest').timestamp;
+}
+
+// To replace of waitNDdays()
+export function forwardNDays(days) {
+    return increaseTimeTo(latestTime() + duration.days(days));
+}
