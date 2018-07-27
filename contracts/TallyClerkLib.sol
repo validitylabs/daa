@@ -10,7 +10,7 @@ library TallyClerkLib {
 
     using SafeMath for uint256;
 
-    enum voteTicket{Abstain, No, Yes}
+    enum voteTicket{NotYetParticipated, Abstain, No, Yes}
 
     struct VotesPerProposal {
         uint256 participantNum;
@@ -46,7 +46,17 @@ library TallyClerkLib {
      *@motice This function should be called, everytime a member votes.
      */
     function refreshResult(VotesPerProposal storage _currentVotes, address _voter, voteTicket _newVote) public {
-        _currentVotes.participantNum++;
+        if (_currentVotes.participantList[_voter] == voteTicket.NotYetParticipated) {
+            // new vote
+            _currentVotes.participantNum++;
+        } else {
+            // change previous vote
+            if (_currentVotes.participantList[_voter] == voteTicket.Yes) {
+                _currentVotes.yesNum--;
+            } else if (_currentVotes.participantList[_voter] == voteTicket.Abstain) {
+                _currentVotes.abstainNum--;
+            }
+        }
         if (_newVote == voteTicket.Yes) {
             _currentVotes.yesNum++;
         } else if (_newVote == voteTicket.Abstain) {

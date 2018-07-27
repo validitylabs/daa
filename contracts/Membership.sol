@@ -213,10 +213,6 @@ contract Membership is Accessible, Ownable {
         membershipList[_newMember] = membershipStatus.isMember;
         headcount++;
     }
-
-    function getTreasuryAdr() public view returns (address) {
-        return treasuryAdr;
-    }
     
     // /**
     //  *@notice Whether need to move to the wallet contract

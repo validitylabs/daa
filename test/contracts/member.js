@@ -4,10 +4,11 @@
  * @author Validity Labs AG <info@validitylabs.org>
  */
 
-import {expectThrow, waitNDays, getEvents, BigNumber, increaseTimeTo} from './helpers/tools';
+import {expectThrow, waitNDays, getEvents, BigNumber, increaseTimeTo, duration } from './helpers/tools';
 import { getNegativePatternsAsPositive } from '../../node_modules/fast-glob/out/managers/tasks';
 import { request } from 'https';
 import { it } from 'mocha';
+import { first } from '../../node_modules/rxjs/operator/first';
 
 // const DAOToken = artifacts.require('./DAOToken.sol');˚
 
@@ -36,6 +37,8 @@ contract('Membership Test (without DAO Token)', (accounts) => {
     const whitelister2  = accounts[3];
     const requester     = accounts[5];
     const newWhiteLister = accounts[6];
+    const newMember     = accounts[7];
+    const member2       = accounts[8];
     const others        = accounts[9];
 
     // Printout useful account addresses for further comparison
@@ -148,10 +151,10 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         let requesterIsWhitelistedByTwo = await membershipInstance.checkIsWhitelistedByTwo.call(requester);
         assert.isTrue(requesterIsWhitelistedByTwo, 'The requester has not yet been whitelisted by two');
     });
-
+    
     it('should successfully pay the membership fee', async () => {
         const payment = web3.toWei(1, 'ether');
-
+        
         await expectThrow(TreasuryInstance.payNewMembershipFee({
             from: others, 
             value: 10000
@@ -160,21 +163,21 @@ contract('Membership Test (without DAO Token)', (accounts) => {
             from: others, 
             value: payment
         }));
-
+        
         // console.log(payment);
         let paymentReachesDesiredValue = await membershipInstance.reachDesiredValue.call(payment);
         assert.isTrue(paymentReachesDesiredValue, 'The payment is not enough');
         
         // let addMember = await membershipInstance.addNewMember(requester, {from: TreasuryInstance.address});
         // assert.isTrue(addMember, 'The member was not added successfully');
-
+        
         let totalBalanceBaforePayment = await WalletInstance.getTotalBalance.call();
         // console.log(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber());
         assert.equal(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber(), 'The balance value does not match');
         
-        // let treasuryAdrForMembershipContract = await membershipInstance.getTreasuryAdr.call();
-        // console.log(treasuryAdrForMembershipContract);
-
+        let treasuryAdrForMembershipContract = await membershipInstance.treasuryAdr();
+        console.log(treasuryAdrForMembershipContract);
+        
         const tx2 = await TreasuryInstance.payNewMembershipFee({
             from: requester, 
             value: payment, 
@@ -184,9 +187,76 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         let totalBalanceAfterPayment = await WalletInstance.getTotalBalance.call();
         // console.log(totalBalanceAfterPayment[0].toNumber(), totalBalanceAfterPayment[1].toNumber());
         assert.equal(totalBalanceBaforePayment[0].toNumber(), totalBalanceBaforePayment[1].toNumber(), 'The balance value does not match');
+        
+        let currentStatus = await membershipInstance.getMembershipStatus.call(requester);
+        assert.equal(currentStatus, 4, 'The requester is not a member?!');
     });
 
-    
+    it('should add two other members in the system', async () => {
+        await membershipInstance.requestMembership({from: newMember});
+        await membershipInstance.whitelistMember(newMember, {from: whitelister1});
+        await membershipInstance.whitelistMember(newMember, {from: newWhiteLister});
+        await TreasuryInstance.payNewMembershipFee({
+            from: newMember, 
+            value: 10000, 
+            gas: 700000
+        });
+
+        let currentStatus = await membershipInstance.getMembershipStatus.call(newMember);
+        assert.equal(currentStatus, 4, 'The requester is not a member?!');
+
+        await membershipInstance.requestMembership({from: member2});
+        await membershipInstance.whitelistMember(member2, {from: whitelister1});
+        await membershipInstance.whitelistMember(member2, {from: newWhiteLister});
+        await TreasuryInstance.payNewMembershipFee({
+            from: member2, 
+            value: 10000, 
+            gas: 700000
+        });
+
+        let currentStatus2 = await membershipInstance.getMembershipStatus.call(member2);
+        assert.equal(currentStatus2, 4, 'The requester is not a member?!');
+    });
+
+    const firstProposalID = 'FirstID_123';
+    const durationBeforeVotingStarts = duration.minutes(5); // in seconds
+    // Timestamp is in milliseconds... but time is in seconds
+    it('should initiated a proposal', async () => {
+        let money = 1; // wei
+        let startingTime = Date.now() + durationBeforeVotingStarts * 1000;
+        let proposalDuration = duration.days(7);
+        // The minimum duration is at least in 7 days.
+        let proposalID = firstProposalID;
+        let shortDescription = 'Interesting proposal';
+        // Be careful, the description cannot exceed 32 bytes
+
+        assert(Date.now() < startingTime, 'The timing modifier should be passed.');
+
+        const tx1 = await ProposalManagerInstance.createProposal(
+            proposalID,
+            shortDescription,
+            requester,
+            money,
+            startingTime,
+            proposalDuration,
+            false,
+            {from: requester}            
+        );
+        const events1 = getEvents(tx1, 'CreateProposal');
+        assert.equal(events1[0].DestinationAddress, requester, 'Account address is wrong');
+        assert.equal(web3.toUtf8(events1[0].ID),proposalID, 'ID does not match');
+    });
+
+    it('should let members vote', async() => {
+        // fastforward 5 min to jump into the right time interval.
+
+        await waitNDays(1);
+        let vote = 1;
+        const tx1 = await ProposalManagerInstance.voteForProposal(firstProposalID, 1, {from: newMember});
+        let actualVote = await ProposalManagerInstance.getVoteForProposal.call(firstProposalID, newMember);
+        console.log(actualVote.toNumber());
+        assert.equal(actualVote.toNumber(), vote, 'The vote is not correct');
+    });
     
 
 

@@ -71,7 +71,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     uint256 constant EXPELMEMBER_DURATION = 1 weeks; 
     uint256 constant VOTINGTIMEGAP_BETWEENPROPOSALS_GA = 3 minutes;
     uint256 constant VOTINGDURITION_PROPOSAL_GA = 10 minutes;
-    uint256 constant ANSWER_OPTIONS = 3;
+    uint256 constant ANSWER_OPTIONS = 4;
 
     // replace the bytes32 _proposalID by the uint256 _proposalID
     uint256 public numTotalProposals;
@@ -112,7 +112,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
      *@notice min duration 7 days, max duration 60 days.
      */
     modifier shouldVoteInTime(uint256 _proposedDuration) {
-        require(_proposedDuration.isFinished(7 days) && _proposedDuration.isInside(0, 60 days));
+        require(_proposedDuration.isInside(7 days, 60 days));
         _;
     }
 
@@ -173,25 +173,27 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
      *@dev   The infomation is stored in two mapping, one is inside the minimal proposal, the additionals are stored in the additionals mappings for the normal proposal.
      */
     function createProposal(
-        bytes32 _proposalID
-        ,bytes32 _shortDescription
-        ,address _destinationAddress
-        ,uint256 _targetAmount
-        ,uint256 _startingTime
-        ,uint256 _duration
-        ,bool _externalHelp
-    ) public memberOnly shouldVoteInTime(_duration) returns (bool) {
-        require(_startingTime > now);
+        bytes32 _proposalID,
+        bytes32 _shortDescription,
+        address _destinationAddress,
+        uint256 _targetAmount,
+        uint256 _startingTime,
+        uint256 _duration,
+        bool _externalHelp
+    ) 
+        public 
+        memberOnly 
+        shouldVoteInTime(_duration) 
+    returns (bool) {
+        require(_startingTime > block.timestamp);
 
         uint256 _endingTime = _startingTime.add(_duration);
 
         proposalList[_proposalID] = BasicProposal(_proposalID, _shortDescription, _startingTime, _endingTime, false, false, false);
         proposalAdditionalsList[_proposalID] = ProposalAdditionals(_destinationAddress, _targetAmount, _externalHelp);
 
-        // proposalList[_proposalID] = tempBasic;
-        // proposalAdditionalsList[_proposalID] = tempAdditional;
-
         emit CreateProposal(_proposalID, _destinationAddress, _targetAmount, _startingTime, _endingTime);
+
     }
 
 
@@ -317,8 +319,16 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     /**
      *@notice All the proposals except the vote for delegate can use this function.
      */
-    function voteForProposal(bytes32 _proposalID, uint256 _answer) public memberOnly votable(_proposalID) returns (bool) {
-        require(_answer < ANSWER_OPTIONS);   //TallyClerk.voteTicket{Abstain, No, Yes}
+    function voteForProposal(
+        bytes32 _proposalID, 
+        uint256 _answer
+    ) 
+        public 
+        // memberOnly 
+        // votable(_proposalID) 
+        returns (bool) 
+    {
+        // require(_answer < ANSWER_OPTIONS);   //TallyClerk.voteTicket{Abstain, No, Yes}
         votesForEachProposal[_proposalID].refreshResult(msg.sender, TallyClerkLib.voteTicket(_answer));
         // votesForEachProposal[_proposalID].participantList[msg.sender] = TallyClerkLib.voteTicket(_answer);
         // votesForEachProposal[_proposalID].participantNum++;
@@ -399,6 +409,9 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         return true;
     }
 
+    function getVoteForProposal(bytes32 _proposalID, address _adr) public view returns (uint256) {
+        return uint256(votesForEachProposal[_proposalID].participantList[_adr]);
+    }
 
     function canExternalParticipate(bytes32 _proposalID) public view returns (bool) {
         return proposalAdditionalsList[_proposalID].allowExternalDeposition;

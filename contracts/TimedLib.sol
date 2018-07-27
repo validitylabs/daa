@@ -27,7 +27,7 @@ library TimedLib {
      *@notice When the end time is passed, some activites such as conclusion is thereby activated.
      */
     function isFinished(uint256 _currentTime, uint256 _end) pure internal returns (bool) {
-        if (_currentTime > _end) {
+        if (_currentTime >= _end) {
             return true;
         } else {
             return false;
