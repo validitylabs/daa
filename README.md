@@ -229,7 +229,7 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
 - [ ] proposal discharge? = step down and propose GA?
 
-- [ ] check whether implemented: at the absence of delegate, disable payout.
+- [x] check whether implemented: at the absence of delegate, disable payout.
 
 - [ ] Fix the setup of quorum
 
@@ -264,6 +264,8 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
   
 
 - [ ] Voting mechanism - to revise
+
+- [ ] Changed the way of allocating the GA proposal to a certain GA. Now, a GA can be proposed first and allocate to an existing GA (one after the other). It is not yet possible to remove it if such proposal is already in queue for one GA. At the same time , there is a risk that someone just puts junk GA proposals and allocates them to one GA until it been filled up -> make one GA unavailable. 
 
   
 

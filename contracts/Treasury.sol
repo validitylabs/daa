@@ -22,7 +22,12 @@ contract Treasury is Ownable{
     DAA public daa;
     mapping(bytes32=>bool) public cleared;
 
-
+    // /**
+    //  *@param WalletType True when the wallet is internal; False when external
+    //  *@param PayorDraw True when the account pays to the wallet; Otherwise, false
+    //  */
+    // event WalletActivity(address indexed Account, bool indexed WalletType, bool indexed PayOrDraw, uint256 Amount, uint256 timeStamp);
+    
     modifier uponProposalSuccess(bytes32 _proposalID) {
         require(proposalGate.getProposalFinalResult(_proposalID));
         _;
@@ -121,6 +126,8 @@ contract Treasury is Ownable{
 
         accessibleGate.addNewMember(msg.sender);
         daoWallet.payContribution.value(msg.value)(msg.sender);
+
+        // emit WalletActivity(msg.sender, true, true, msg.value, block.timestamp);
     }
     
     /**

@@ -89,8 +89,10 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     mapping(address=>uint256) listOfCandidateAddress;
     uint256 numberOfCandidate;
 
-    bytes32[] public proposalsForNextGA;
-    bytes32[] public proposalsForDelegateForNextGA;
+    // bytes32[] public proposalsForNextGA; // This array is replaced by the following mapping due to the change of process. 
+    // The first mapping maps from the proposalID to bool (true if the proposal is available to be set to the next GA).
+    mapping(bytes32=>bool) proposalsCanBeSetForNextGA;
+    // bytes32[] public proposalsForDelegateForNextGA;
 
 
     event CreateProposal(bytes32 indexed ID, address indexed DestinationAddress, uint256 Amount, uint256 StartingTime, uint256 EndingTime);
@@ -217,7 +219,8 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         // proposalList[_proposalID] = tempBasic;
         // gaProposalAdditionalsList[_proposalID] = GAProposalAdditionals;
 
-        proposalsForDelegateForNextGA.push(_proposalID);
+        // proposalsForDelegateForNextGA.push(_proposalID);
+        proposalsCanBeSetForNextGA[_proposalID] = true;
 
         proposalList[_proposalID] = BasicProposal(_proposalID, _shortDescription, 0, 0, false, false, true);
         gaProposalAdditionalsList[_proposalID] = GAProposalAdditionals(ActionType.proposeDelegateCandidancy, msg.sender, 0, "", 0x0, 0x0);
@@ -253,7 +256,8 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         bytes32 _shortDescription
     ) public memberOnly returns (bool) {
         
-        proposalsForNextGA.push(_proposalID);
+        // proposalsForNextGA.push(_proposalID);
+        proposalsCanBeSetForNextGA[_proposalID] = true;
 
         proposalList[_proposalID] = BasicProposal(_proposalID, _shortDescription, 0, 0, false, false, true);
         gaProposalAdditionalsList[_proposalID] = GAProposalAdditionals(ActionType.proposeDissolution, 0x0, 0, "", 0x0, 0x0);
@@ -268,7 +272,8 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         bytes32 _shortDescription,
         bytes32 _newHash
     ) public memberOnly returns (bool) {
-        proposalsForNextGA.push(_proposalID);
+        // proposalsForNextGA.push(_proposalID);
+        proposalsCanBeSetForNextGA[_proposalID] = true;
 
         proposalList[_proposalID] = BasicProposal(_proposalID, _shortDescription, 0, 0, false, false, true);
         gaProposalAdditionalsList[_proposalID] = GAProposalAdditionals(ActionType.proposeUpdateStatute, 0x0, 0, _newHash, 0x0, 0x0);
@@ -311,7 +316,9 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         proposalList[_proposalID] = BasicProposal(_proposalID, _shortDescription, 0, 0, false, false, true);
         gaProposalAdditionalsList[_proposalID] = GAProposalAdditionals(ActionType.proposeUpdateWallet, 0x0, 0, "", _internalWallet, _externalWallet);
 
-        proposalsForNextGA.push(_proposalID);
+        // proposalsForNextGA.push(_proposalID);
+        proposalsCanBeSetForNextGA[_proposalID] = true;
+
 
         emit CreateGAProposal(_proposalID, ActionType.proposeUpdateWallet);
     }
@@ -343,6 +350,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
      *@title Vote for new delegate proposal.
      *@notice There is/are (multiple) proposal(s) for the delegate position. One has only one vote for such proposal that happens at the same time.
      */
+     //@TODO When someone wants to change the vote....
     function voteForDelegate(bytes32 _proposalID, TallyClerkLib.voteTicket _answer) public memberOnly votable(_proposalID) returns (bool) {
         require(gaProposalAdditionalsList[_proposalID].actionType == ActionType.proposeDelegateCandidancy);
         // one can only vote for one candidate.
@@ -353,30 +361,69 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         return true;
     }
 
+    // /**
+    //  *@title  Set order (statingTime etc) for GA proposals to be open automatically at GA.
+    //  *@dev  This function can be called by anyone, when GA starts.
+    //  */
+    //  //@TODO Change this function into assigning proposals to GA.
+    // function prepareForGA() public returns (bool) {
+    //     require(gaManager.isDuringGA());
+    //     require(proposalsForNextGA.length > 0 || proposalsForDelegateForNextGA.length > 0);
+    //     uint256 _scheduledStartingTime = now.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+    //     if (proposalsForDelegateForNextGA.length > 0) {
+    //         uint256 _scheduledEndingTime = _scheduledStartingTime.add(VOTINGDURITION_PROPOSAL_GA);
+    //         for (uint256 j = 0; j < proposalsForDelegateForNextGA.length; j++) {
+    //             proposalList[proposalsForDelegateForNextGA[i]].startingTime = _scheduledStartingTime;
+    //             proposalList[proposalsForNextGA[i]].endingTime = _scheduledEndingTime;
+    //         }
+    //         delete(proposalsForDelegateForNextGA);
+    //     }
+    //     for (uint256 i = 0; i < proposalsForNextGA.length; i++) {
+    //         _scheduledStartingTime = _scheduledStartingTime.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+    //         proposalList[proposalsForNextGA[i]].startingTime = _scheduledStartingTime;
+    //         _scheduledStartingTime = _scheduledStartingTime.add(VOTINGDURITION_PROPOSAL_GA);
+    //         proposalList[proposalsForNextGA[i]].endingTime = _scheduledStartingTime;
+    //     }
+    //     delete(proposalsForNextGA);
+    //     return true;
+    // }
+
     /**
-     *@title  Set order (statingTime etc) for GA proposals to be open automatically at GA.
-     *@dev  This function can be called by anyone, when GA starts.
+     *@title New method of allocating a GA proposal (except for the delegate election) to a scheduled GA
+     *@dev   Need to make sure that the current GA proposal has not yet be assigned.
+     *@notice Delegate candidancy related proposals cannot be set via such function but another one. 
+     *@param _proposalID The reference ID of proposals.
+     *@param _gaIndex The index of the addressed GA.
      */
-    function prepareForGA() public returns (bool) {
-        require(gaManager.isDuringGA());
-        require(proposalsForNextGA.length > 0 || proposalsForDelegateForNextGA.length > 0);
-        uint256 _scheduledStartingTime = now.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
-        if (proposalsForDelegateForNextGA.length > 0) {
-            uint256 _scheduledEndingTime = _scheduledStartingTime.add(VOTINGDURITION_PROPOSAL_GA);
-            for (uint256 j = 0; j < proposalsForDelegateForNextGA.length; j++) {
-                proposalList[proposalsForDelegateForNextGA[i]].startingTime = _scheduledStartingTime;
-                proposalList[proposalsForNextGA[i]].endingTime = _scheduledEndingTime;
-            }
-            delete(proposalsForDelegateForNextGA);
-        }
-        for (uint256 i = 0; i < proposalsForNextGA.length; i++) {
-            _scheduledStartingTime = _scheduledStartingTime.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
-            proposalList[proposalsForNextGA[i]].startingTime = _scheduledStartingTime;
-            _scheduledStartingTime = _scheduledStartingTime.add(VOTINGDURITION_PROPOSAL_GA);
-            proposalList[proposalsForNextGA[i]].endingTime = _scheduledStartingTime;
-        }
-        delete(proposalsForNextGA);
-        return true;
+    function setProposalToGA(bytes32 _proposalID, uint256 _gaIndex) public returns (bool) {
+        require(proposalsCanBeSetForNextGA[_proposalID] == true);
+        require(gaProposalAdditionalsList[_proposalID].actionType != ActionType.proposeDelegateCandidancy);
+        uint256 _startingTime = gaManager.getTimeIfNextGAExistsAndNotYetFullyBooked(_gaIndex);
+        require(_startingTime != 0);
+        uint256 _newEndTime = _startingTime.add(VOTINGDURITION_PROPOSAL_GA);
+        proposalList[_proposalID].startingTime = _startingTime;
+        proposalList[_proposalID].endingTime = _newEndTime;
+        // _newEndTime = _newEndTime.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+        proposalsCanBeSetForNextGA[_proposalID] = false;
+        // setGAcurrentEndTime(_gaIndex, _newEndTime);
+        return true; 
+    }
+
+    /**
+     *@title Assign all the candidancy proposals that are in the pipeline to the target GA.
+     *@param _proposalID The reference ID of proposals.
+     *@param _gaIndex The index of the target GA. 
+     */
+    function setDelegateProposalsToGA(bytes32 _proposalID, uint256 _gaIndex) public returns (bool) {
+        require(proposalsCanBeSetForNextGA[_proposalID] == true);
+        require(gaProposalAdditionalsList[_proposalID].actionType == ActionType.proposeDelegateCandidancy);
+        uint256 _startingTime = gaManager.getTimeIfNextGAExistsAndNotYetFullyBooked(_gaIndex);
+        require(_startingTime != 0);
+        proposalList[_proposalID].startingTime = _startingTime;
+        proposalList[_proposalID].endingTime = _startingTime.add(VOTINGDURITION_PROPOSAL_GA);
+        // _newEndTime = _newEndTime.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+        proposalsCanBeSetForNextGA[_proposalID] = false;
+        // setGAcurrentEndTime(_gaIndex, _newEndTime);
     }
 
     /**
