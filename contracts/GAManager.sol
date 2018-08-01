@@ -35,9 +35,16 @@ contract GAManager is Ownable {
     bytes32 public currentHashOfStatutes;
 
     TallyClerkLib.CandidancyForDelegate public potentialCandidateListForCurrentGA;
-    mapping(address=>uint256) listOfCandidateAddress;
-    uint256 numberOfCandidate;
-    address newDelegate;
+    TallyClerkLib.CandidancyForDelegate private tempList;
+    
+    struct CandidateAssistant {
+        mapping(address=>uint256) listOfCandidateAddress;
+        uint256 numberOfCandidate;
+    }
+    // address newDelegate;
+
+    CandidateAssistant public candidateAssitant;
+    CandidateAssistant private tempCandidateAssitant;
 
     uint256 constant TIMESPAN_GA = 104 weeks;               // The delegate can setup the annual GA that happens in max. 2 years
     uint256 constant CLOSEST_FUTURE_GA = 4 weeks;           // The annual GA can only be set in 4 weeks.
@@ -111,13 +118,13 @@ contract GAManager is Ownable {
      *@title 
      */
     function addDelegateCandidate(address _adr) beforeGAstarts external proposalOnly {
-        require(listOfCandidateAddress[_adr] == 0);
+        require(candidateAssitant.listOfCandidateAddress[_adr] == 0);
         // list starts from 0
-        potentialCandidateListForCurrentGA.list[numberOfCandidate].candidate = _adr;
-        potentialCandidateListForCurrentGA.list[numberOfCandidate].supportingVoteNum = 0;
+        potentialCandidateListForCurrentGA.list[candidateAssitant.numberOfCandidate].candidate = _adr;
+        potentialCandidateListForCurrentGA.list[candidateAssitant.numberOfCandidate].supportingVoteNum = 0;
         // listOfCandidateAddress starts from 1
-        numberOfCandidate++;
-        listOfCandidateAddress[_adr] = numberOfCandidate;
+        candidateAssitant.numberOfCandidate++;
+        candidateAssitant.listOfCandidateAddress[_adr] = candidateAssitant.numberOfCandidate;
         potentialCandidateListForCurrentGA.totalLength++;
         potentialCandidateListForCurrentGA.revoteOrNot = false;
         potentialCandidateListForCurrentGA.potentialRevote = 0;
@@ -179,7 +186,7 @@ contract GAManager is Ownable {
     }
 
     function voteForDelegate(address _adr) public proposalOnly returns (bool) {
-        potentialCandidateListForCurrentGA.list[listOfCandidateAddress[_adr]-1].supportingVoteNum++;
+        potentialCandidateListForCurrentGA.list[candidateAssitant.listOfCandidateAddress[_adr]-1].supportingVoteNum++;
         potentialCandidateListForCurrentGA.participantNum++;
         return true;
     }
@@ -189,28 +196,52 @@ contract GAManager is Ownable {
      *     whether to revote the candidate or not. 
      *     If non, tell the index where the hightest vote is stored. If yes, tell how many candidates are needed to participate into the next round.
      */
-    function concludeDelegateVoting(uint256 _minParticipant, uint _minYes) public returns (bool, bool, uint256) {
+    function concludeDelegateVoting(uint256 _minParticipant, uint _minYes) public returns (bool, bool) {
         potentialCandidateListForCurrentGA.findMostVotes();
         // Check if the the participant number reaches minimum
         if (potentialCandidateListForCurrentGA.participantNum > _minParticipant) {
             if (potentialCandidateListForCurrentGA.list[potentialCandidateListForCurrentGA.markedPositionForRevote[0]].supportingVoteNum > _minYes) {
                 if (potentialCandidateListForCurrentGA.revoteOrNot == false) {
-                    delete(potentialCandidateListForCurrentGA);
                     // Here shows the final delegate. 
-                    return (true, false, potentialCandidateListForCurrentGA.markedPositionForRevote[0]);
                     accessibleGate.setDelegate(potentialCandidateListForCurrentGA.list[potentialCandidateListForCurrentGA.markedPositionForRevote[0]].candidate);
-                } else {
                     delete(potentialCandidateListForCurrentGA);
-                    // need to create proposal accordingly.
-                    return (true, true, potentialCandidateListForCurrentGA.potentialRevote);
+                    delete(candidateAssitant);
+                    return (true, false);
+                } else {
+                    // Enter revoting phase.
+                    // 1. Need to create a(n) (additional) time slot.
+                    GAInfo memory temp = scheduledGA[currentIndex];
+                    // CandidateAssistant memory tempCandidateAssitant;
+                    if (temp.GAStartTime.canSchedule(temp.GADuration, temp.currentEndTime, VOTINGDURITION_PROPOSAL_GA) == false) {
+                        // current GA is full. Need to extend it and shcedule the meeting
+                        scheduledGA[currentIndex].GADuration = scheduledGA[currentIndex].GADuration.add(VOTINGDURITION_PROPOSAL_GA);
+                    }
+                        // put the next round into the current GA
+                        scheduledGA[currentIndex].delegateElectionTime = scheduledGA[currentIndex].currentEndTime;
+                        scheduledGA[currentIndex].currentEndTime = scheduledGA[currentIndex].currentEndTime.add(VOTINGDURITION_PROPOSAL_GA).add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+                    // 2. Need to create new proposal list. 
+                    
+                    tempList.totalLength = potentialCandidateListForCurrentGA.potentialRevote;
+                    tempCandidateAssitant.numberOfCandidate = tempList.totalLength;
+                    for (uint256 i = 0; i < potentialCandidateListForCurrentGA.potentialRevote; i++) {
+                        tempList.list[i] = potentialCandidateListForCurrentGA.list[potentialCandidateListForCurrentGA.markedPositionForRevote[i]];
+                        tempCandidateAssitant.listOfCandidateAddress[tempList.list[i].candidate] = i;
+                    }
+                    potentialCandidateListForCurrentGA = tempList;
+                    candidateAssitant = tempCandidateAssitant;
+                    delete(tempList);
+                    delete(tempCandidateAssitant);
+                    return (true, true);
                 }
             } else {
+                delete(candidateAssitant);
                 delete(potentialCandidateListForCurrentGA);
-                return (false, false, 0);
+                return (false, false);
             }
         } else {
+            delete(candidateAssitant);
             delete(potentialCandidateListForCurrentGA);
-            return (false, false, 0);
+            return (false, false);
         }
     }
 
@@ -304,7 +335,7 @@ contract GAManager is Ownable {
      */
     function getTimeIfNextGAExistsAndNotYetFullyBooked(uint256 _gaIndex) proposalOnly public returns (uint256) {
         GAInfo memory temp = scheduledGA[_gaIndex];
-        if (temp.GAStartTime > block.timestamp && temp.currentEndTime.add(VOTINGDURITION_PROPOSAL_GA) < temp.GAStartTime.add(temp.GADuration)) {
+        if (temp.GAStartTime > block.timestamp && temp.GAStartTime.canSchedule(temp.GADuration, temp.currentEndTime, VOTINGDURITION_PROPOSAL_GA)) {
             uint256 _end = temp.currentEndTime;
             scheduledGA[_gaIndex].currentEndTime = _end.add(VOTINGDURITION_PROPOSAL_GA).add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
             return _end;
@@ -312,13 +343,18 @@ contract GAManager is Ownable {
             return 0;
         }
     }
-    ß
+    
     /**
      *@title Getter to check if we could vote for delegate now
      */
-    function canVoteForDelegate() public view returns (bool) {
+    function canVoteForDelegate(address _candidate) public view returns (bool) {
         GAInfo memory temp = scheduledGA[currentIndex];
-        return (block.timestamp.isInside(temp.delegateElectionTime, temp.delegateElectionTime.add(VOTINGDURITION_PROPOSAL_GA)));
+        //@TODO If this _candidate is inside the list of candidates.
+        if (candidateAssitant.listOfCandidateAddress[_candidate] != 0) {
+            return (block.timestamp.isInside(temp.delegateElectionTime, temp.delegateElectionTime.add(VOTINGDURITION_PROPOSAL_GA)));
+        } else {
+            return false;
+        }
     }
 
     // /**

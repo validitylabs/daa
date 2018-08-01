@@ -355,7 +355,8 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
      //@TODO When someone wants to change the vote....
     function voteForDelegate(bytes32 _proposalID, TallyClerkLib.voteTicket _answer) public memberOnly returns (bool) {
         require(gaProposalAdditionalsList[_proposalID].actionType == ActionType.proposeDelegateCandidancy);
-        require(gaManager.canVoteForDelegate());
+        address preferredCandidate = gaProposalAdditionalsList[_proposalID].candidate;
+        require(gaManager.canVoteForDelegate(preferredCandidate));
 
         if (_answer == TallyClerkLib.voteTicket.Yes) {
             votesForDelegateProposal.participantList[msg.sender] = _proposalID;

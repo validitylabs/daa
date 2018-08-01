@@ -7,6 +7,8 @@ pragma solidity ^0.4.21;
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol"; 
 
 library TimedLib {
+
+    using SafeMath for uint256;
     
     /**
      *@dev This function checks whether the number sits in between the minimum and maximum number.
@@ -28,6 +30,21 @@ library TimedLib {
      */
     function isFinished(uint256 _currentTime, uint256 _end) pure internal returns (bool) {
         if (_currentTime >= _end) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     *@title Check if possible to schedule another proposal voting time in current GA
+     *@param _startTime The starting timestamp of current GA
+     *@param _totalDuration The duration of the current GA
+     *@param _currentEnd The end of scheduled proposals
+     *@param _duration The voting window needed for the suggested proposal
+     */
+    function canSchedule(uint256 _startTime, uint256 _totalDuration, uint256 _currentEnd, uint256 _duration) pure internal returns (bool) {
+        if (_currentEnd.add(_duration) <= _startTime.add(_totalDuration)) {
             return true;
         } else {
             return false;
