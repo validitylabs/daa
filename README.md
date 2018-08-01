@@ -261,11 +261,18 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
   6. Start from the step 1
 
-  
+- [ ] Second round extension for revoting 
 
 - [ ] Voting mechanism - to revise
 
 - [ ] Changed the way of allocating the GA proposal to a certain GA. Now, a GA can be proposed first and allocate to an existing GA (one after the other). It is not yet possible to remove it if such proposal is already in queue for one GA. At the same time , there is a risk that someone just puts junk GA proposals and allocates them to one GA until it been filled up -> make one GA unavailable. 
+
+  - [ ] Possible solution: cost for creating a GA proposal
+  - [ ] Possible soluiton: limited number of GA proposal per member
+
+- [ ] Set GA proposal to GA is located in ProposalManager.sol but set delegate candidancy proposal is located in GAManager.sol
+
+- [ ] Before concluding the candidancy proposals -> new proposals are not taken into account ... LOL
 
   
 

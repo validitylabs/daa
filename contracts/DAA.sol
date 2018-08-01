@@ -77,6 +77,7 @@ contract DAA {
         gaManagerContract = GAManager(_newAdr);
         // start to change contract addresses, including proposalManager
         proposalManagerContract.updateGAContractAddress(_newAdr);
+        membershipContract.updateGAContractAddress(_newAdr);
     }
 
     function updateInternalWallet(address _newAdr) external {

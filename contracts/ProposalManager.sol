@@ -23,9 +23,9 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     using SafeMath for uint256;
     // using ActionLib for *;
 
-    Accessible accessibleGate;
-    GAManager gaManager;
-    DAAInterface daaGate;
+    Accessible public accessibleGate;
+    GAManager public gaManager;
+    DAAInterface public daaGate;
 
     enum ActionType {
         notGAproposal,
@@ -85,7 +85,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     //      WHAT IF! There are several ongoing GA prooposal that is proposed for the newdelegate...
     //      The solution may be: using this mapping that links structs into this public variable... which is in parallel to the gaProposalAdditionalsList.
     TallyClerkLib.VotesForDelegate public votesForDelegateProposal;
-    mapping(bytes32=>TallyClerkLib.CandidancyForDelegate) public potentialCandidateListForParticularGA;
+    // mapping(bytes32=>TallyClerkLib.CandidancyForDelegate) public potentialCandidateListForParticularGA;
     mapping(address=>uint256) listOfCandidateAddress;
     uint256 numberOfCandidate;
 
@@ -336,6 +336,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         returns (bool) 
     {
         require(_answer < ANSWER_OPTIONS);   //TallyClerk.voteTicket{Abstain, No, Yes}
+        require(gaProposalAdditionalsList[_proposalID].actionType != ActionType.proposeDelegateCandidancy);
         votesForEachProposal[_proposalID].refreshResult(msg.sender, TallyClerkLib.voteTicket(_answer));
         // votesForEachProposal[_proposalID].participantList[msg.sender] = TallyClerkLib.voteTicket(_answer);
         // votesForEachProposal[_proposalID].participantNum++;
@@ -346,18 +347,22 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
         // }
         return true;
     }
+
     /**
      *@title Vote for new delegate proposal.
      *@notice There is/are (multiple) proposal(s) for the delegate position. One has only one vote for such proposal that happens at the same time.
      */
      //@TODO When someone wants to change the vote....
-    function voteForDelegate(bytes32 _proposalID, TallyClerkLib.voteTicket _answer) public memberOnly votable(_proposalID) returns (bool) {
+    function voteForDelegate(bytes32 _proposalID, TallyClerkLib.voteTicket _answer) public memberOnly returns (bool) {
         require(gaProposalAdditionalsList[_proposalID].actionType == ActionType.proposeDelegateCandidancy);
-        // one can only vote for one candidate.
-        if (votesForDelegateProposal.participantList[msg.sender] == "" && _answer == TallyClerkLib.voteTicket.Yes) {
+        require(gaManager.canVoteForDelegate());
+
+        if (_answer == TallyClerkLib.voteTicket.Yes) {
             votesForDelegateProposal.participantList[msg.sender] = _proposalID;
-            gaManager.voteForDelegate(gaProposalAdditionalsList[_proposalID].candidate);
-        }  
+            if (votesForDelegateProposal.participantList[msg.sender] == "") {
+                gaManager.voteForDelegate(gaProposalAdditionalsList[_proposalID].candidate);
+            }
+        }
         return true;
     }
 
@@ -410,49 +415,31 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     }
 
     /**
-     *@title Assign all the candidancy proposals that are in the pipeline to the target GA.
-     *@param _proposalID The reference ID of proposals.
-     *@param _gaIndex The index of the target GA. 
-     */
-    function setDelegateProposalsToGA(bytes32 _proposalID, uint256 _gaIndex) public returns (bool) {
-        require(proposalsCanBeSetForNextGA[_proposalID] == true);
-        require(gaProposalAdditionalsList[_proposalID].actionType == ActionType.proposeDelegateCandidancy);
-        uint256 _startingTime = gaManager.getTimeIfNextGAExistsAndNotYetFullyBooked(_gaIndex);
-        require(_startingTime != 0);
-        proposalList[_proposalID].startingTime = _startingTime;
-        proposalList[_proposalID].endingTime = _startingTime.add(VOTINGDURITION_PROPOSAL_GA);
-        // _newEndTime = _newEndTime.add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
-        proposalsCanBeSetForNextGA[_proposalID] = false;
-        // setGAcurrentEndTime(_gaIndex, _newEndTime);
-    }
-
-    /**
      *@title Conclude the current concludable proposal
+     *@dev Conclude delegate candidancy is implemented in a separate function.
      *@notice This function shall be called by anyone, even non-members.
      */
     //@TODO Implement the proposeDelegateCandidancy!!!
     function concludeProposal(bytes32 _proposalID) concludable(_proposalID) public returns (bool) {
         // calculate the quorum at the moment of conclusion. 
+        require(gaProposalAdditionalsList[_proposalID].actionType != ActionType.proposeDelegateCandidancy);
         uint256 _totalMemberNum = accessibleGate.getTotalMemberNumber();
         Quorum memory _actionTypeEnumToUint = actionQuorum[uint256(gaProposalAdditionalsList[_proposalID].actionType)];
         uint256 _minParticipantNum = _totalMemberNum.calculateQuorum(_actionTypeEnumToUint.participantNumerator, _actionTypeEnumToUint.participantDenominator);
         uint256 _minYesNum = _totalMemberNum.calculateQuorum(_actionTypeEnumToUint.supporterNumerator, _actionTypeEnumToUint.supporterDenominator);
-        if (gaProposalAdditionalsList[_proposalID].actionType == ActionType.proposeDelegateCandidancy) {
-            // normal proposal => calculate quorum
-            _minParticipantNum;
+
+        if (votesForEachProposal[_proposalID].participantNum >= _minParticipantNum && votesForEachProposal[_proposalID].yesNum >= _minYesNum) {
+            proposalList[_proposalID].concludeStatus = true;
+            proposalList[_proposalID].finalResult = true;
         } else {
-            if (votesForEachProposal[_proposalID].participantNum >= _minParticipantNum && votesForEachProposal[_proposalID].yesNum >= _minYesNum) {
-                proposalList[_proposalID].concludeStatus = true;
-                proposalList[_proposalID].finalResult = true;
-            } else {
-                proposalList[_proposalID].concludeStatus = true;
-                proposalList[_proposalID].finalResult = false;
-                return true;
-            }
-            emit ConcludeProposal(_proposalID, msg.sender, now);
-            // should emit one event.
-            // Actions are taken separately by other concluders.
+            proposalList[_proposalID].concludeStatus = true;
+            proposalList[_proposalID].finalResult = false;
+            return true;
         }
+        emit ConcludeProposal(_proposalID, msg.sender, now);
+        // should emit one event.
+        // Actions are taken separately by other concluders.
+
         return true;
     }
 

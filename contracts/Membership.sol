@@ -24,6 +24,7 @@ contract Membership is Accessible, Ownable {
     // DAOToken public nativeToken;
 
     address public treasuryAdr;
+    address public gaManagerAdr;
     uint256 public headcount = 1;
     uint256 private lastNoDelegateTime = 0;
     uint256 public constant personalContribution = 10000 wei;        // The contribution (in wei) that each person needs to pay
@@ -76,6 +77,11 @@ contract Membership is Accessible, Ownable {
     function updateTreasuryAddress(address _newTreasury) public onlyOwner {
         require(_newTreasury != 0x0);
         treasuryAdr = _newTreasury;
+    }
+
+    function updateGAContractAddress(address _newGA) public onlyOwner {
+        require(_newGA != 0x0);
+        gaManagerAdr = _newGA;
     }
 
     // // // separate the update contract function into two small ones 
@@ -239,6 +245,7 @@ contract Membership is Accessible, Ownable {
      *@dev This can only be successfully called by the GA purposal (upon sucess of voting..) 
      */
     function setDelegate(address _adr) public returns (bool) {
+        require(msg.sender == gaManagerAdr);
     //@TODO require(verify msg.sender == GA purposal address)
         require(membershipList[_adr] == membershipStatus.isMember);
         emit ChangeInDelegate(delegate, true);

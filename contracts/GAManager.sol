@@ -124,6 +124,20 @@ contract GAManager is Ownable {
     }
 
     /**
+     *@title Assign all the candidancy proposals that are in the pipeline to the target GA.
+     *@param _proposalID The reference ID of proposals.
+     *@param _gaIndex The index of the target GA. 
+     */
+    function setDelegateProposalsToGA(uint256 _gaIndex) public returns (bool) {
+        uint256 _startingTime = getTimeIfNextGAExistsAndNotYetFullyBooked(_gaIndex);
+        require(_startingTime != 0);
+        scheduledGA[_gaIndex].delegateElectionTime = _startingTime;
+        scheduledGA[_gaIndex].currentEndTime = _startingTime.add(VOTINGDURITION_PROPOSAL_GA).add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+        return true;
+    }
+
+
+    /**
      *@dev check if the GA respects the minimum time gap for GAs. This function may need modification when more regulation is applied.
      *@notice This function currently take both types of GA as identical. They both follow the same set of limitation in timespan and minimum interval.
      */
@@ -175,23 +189,27 @@ contract GAManager is Ownable {
      *     whether to revote the candidate or not. 
      *     If non, tell the index where the hightest vote is stored. If yes, tell how many candidates are needed to participate into the next round.
      */
-    function calculateCandidateReceivedVoting(uint256 _minParticipant, uint _minYes) public proposalOnly returns (bool, bool, uint256) {
+    function concludeDelegateVoting(uint256 _minParticipant, uint _minYes) public returns (bool, bool, uint256) {
         potentialCandidateListForCurrentGA.findMostVotes();
         // Check if the the participant number reaches minimum
         if (potentialCandidateListForCurrentGA.participantNum > _minParticipant) {
             if (potentialCandidateListForCurrentGA.list[potentialCandidateListForCurrentGA.markedPositionForRevote[0]].supportingVoteNum > _minYes) {
                 if (potentialCandidateListForCurrentGA.revoteOrNot == false) {
-                    return (true, false, potentialCandidateListForCurrentGA.markedPositionForRevote[0]);
+                    delete(potentialCandidateListForCurrentGA);
                     // Here shows the final delegate. 
-                    // newDelegate = potentialCandidateListForCurrentGA.list[potentialCandidateListForCurrentGA.markedPositionForRevote[0]].candidate;
+                    return (true, false, potentialCandidateListForCurrentGA.markedPositionForRevote[0]);
+                    accessibleGate.setDelegate(potentialCandidateListForCurrentGA.list[potentialCandidateListForCurrentGA.markedPositionForRevote[0]].candidate);
                 } else {
+                    delete(potentialCandidateListForCurrentGA);
                     // need to create proposal accordingly.
                     return (true, true, potentialCandidateListForCurrentGA.potentialRevote);
                 }
             } else {
+                delete(potentialCandidateListForCurrentGA);
                 return (false, false, 0);
             }
         } else {
+            delete(potentialCandidateListForCurrentGA);
             return (false, false, 0);
         }
     }
@@ -294,30 +312,38 @@ contract GAManager is Ownable {
             return 0;
         }
     }
-
+    ß
     /**
-     *@title Check if there is already some time scheduled for delegate election. If not set it.
-     *@dev check If the next GA is planned. If yes, whether is already fully booked.
-     *@notice This function is used when the GA proposals are set via the function "setProposalToGA" in ProposalManager.sol
-     *@param _gaIndex The index of the scheduled GA. 
+     *@title Getter to check if we could vote for delegate now
      */
-    function getTimeAtNextGAForDelegateElection(uint256 _gaIndex) proposalOnly public returns (uint256) {
-        GAInfo memory temp = scheduledGA[_gaIndex];
-        if (temp.GAStartTime > block.timestamp) {
-            if (temp.delegateElectionTime != 0) {
-                // already smth scheduled
-                return temp.delegateElectionTime;
-            } else {
-                uint256 _end = temp.currentEndTime;
-                if (_end.add(VOTINGDURITION_PROPOSAL_GA) < temp.GAStartTime.add(temp.GADuration)) {
-                    temp.delegateElectionTime = _end;
-                    scheduledGA[_gaIndex].currentEndTime = _end.add(VOTINGDURITION_PROPOSAL_GA).add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
-                    return _end;
-                }
-            }
-        }
-        return 0;
+    function canVoteForDelegate() public view returns (bool) {
+        GAInfo memory temp = scheduledGA[currentIndex];
+        return (block.timestamp.isInside(temp.delegateElectionTime, temp.delegateElectionTime.add(VOTINGDURITION_PROPOSAL_GA)));
     }
+
+    // /**
+    //  *@title Check if there is already some time scheduled for delegate election. If not set it.
+    //  *@dev check If the next GA is planned. If yes, whether is already fully booked.
+    //  *@notice This function is used when the GA proposals are set via the function "setProposalToGA" in ProposalManager.sol
+    //  *@param _gaIndex The index of the scheduled GA. 
+    //  */
+    // function getTimeAtNextGAForDelegateElection(uint256 _gaIndex) proposalOnly public returns (uint256) {
+    //     GAInfo memory temp = scheduledGA[_gaIndex];
+    //     if (temp.GAStartTime > block.timestamp) {
+    //         if (temp.delegateElectionTime != 0) {
+    //             // already smth scheduled
+    //             return temp.delegateElectionTime;
+    //         } else {
+    //             uint256 _end = temp.currentEndTime;
+    //             if (_end.add(VOTINGDURITION_PROPOSAL_GA) < temp.GAStartTime.add(temp.GADuration)) {
+    //                 temp.delegateElectionTime = _end;
+    //                 scheduledGA[_gaIndex].currentEndTime = _end.add(VOTINGDURITION_PROPOSAL_GA).add(VOTINGTIMEGAP_BETWEENPROPOSALS_GA);
+    //                 return _end;
+    //             }
+    //         }
+    //     }
+    //     return 0;
+    // }
 
     // /**
     //  *@title This function updates the current schedule of a given GA.

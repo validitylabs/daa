@@ -69,4 +69,6 @@ contract Accessible {
     function testFuncGetWhitelister(uint256 _i) public view returns (address) {
         return whitelisterList[_i];
     }
+
+    function setDelegate(address _adr) public returns (bool);
 }
