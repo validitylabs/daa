@@ -97,7 +97,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
 
     event CreateProposal(bytes32 indexed ID, address indexed DestinationAddress, uint256 Amount, uint256 StartingTime, uint256 EndingTime);
     event CreateGAProposal(bytes32 indexed ID, ActionType indexed Action);
-    event ConcludeProposal(bytes32 indexed ID, address indexed Concluder, uint256 AtTime);
+    event ConcludeProposal(bytes32 indexed ID, address indexed Concluder, uint256 AtTime, bool FinalResult);
     
 
     modifier memberOnly {
@@ -437,7 +437,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
             proposalList[_proposalID].finalResult = false;
             return true;
         }
-        emit ConcludeProposal(_proposalID, msg.sender, now);
+        emit ConcludeProposal(_proposalID, msg.sender, now, proposalList[_proposalID].finalResult);
         // should emit one event.
         // Actions are taken separately by other concluders.
 

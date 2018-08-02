@@ -86,6 +86,8 @@ Is it possible to be destructed before it’s concluded by the owner?
 
 External donation can only be accepted when the proposal is created (open and before it becomes concludable nor concluded). No need to be votable.
 
+At the moment, the proposal initiator is not automatically voting "yes".
+
 The payout function for external funds is freezed or not during the 
 
 ### General Assembly

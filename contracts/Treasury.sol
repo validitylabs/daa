@@ -107,6 +107,10 @@ contract Treasury is Ownable{
             return false;
         }
     }
+
+    function testGetCleared(bytes32 _proposalID) public view returns (bool) {
+        return cleared[_proposalID];
+    }
     
     /**
      *@title Member pay annual membership fee with this function

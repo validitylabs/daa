@@ -73,6 +73,7 @@ contract Wallet is Ownable {
 
         if (_adr.send(withdrawingAllowance[_adr]) == true) {
             totalAllowance = totalAllowance.sub(withdrawingAllowance[_adr]);
+            totalBalance = totalBalance.sub(withdrawingAllowance[_adr]);
             withdrawingAllowance[_adr] = 0;
             emit WithdrawMoney(_adr, totalAllowance, block.timestamp);
             return true;
@@ -81,6 +82,10 @@ contract Wallet is Ownable {
             withdrawingAllowance[_adr] = 0;
             return false;
         }
+    }
+
+    function testGetAllowance(address _adr) public view returns (uint256) {
+        return allowance[_adr];
     }
 
     /**

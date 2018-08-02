@@ -4,7 +4,7 @@
  * @author Validity Labs AG <info@validitylabs.org>
  */
 
-import {expectThrow, forwardNDays, getEvents, BigNumber, increaseTimeTo, duration, latestTime } from './helpers/tools';
+import { expectThrow, forwardNDays, getEvents, BigNumber, increaseTimeTo, duration, latestTime } from './helpers/tools';
 import { getNegativePatternsAsPositive } from '../../node_modules/fast-glob/out/managers/tasks';
 import { request } from 'https';
 import { it } from 'mocha';
@@ -245,7 +245,7 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         );
         const events1 = getEvents(tx1, 'CreateProposal');
         assert.equal(events1[0].DestinationAddress, requester, 'Account address is wrong');
-        assert.equal(web3.toUtf8(events1[0].ID),proposalID, 'ID does not match');
+        assert.equal(web3.toUtf8(events1[0].ID), proposalID, 'ID does not match');
     });
     
     it('should let a member vote abstain', async() => {
