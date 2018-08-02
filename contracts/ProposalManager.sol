@@ -401,7 +401,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
      *@param _proposalID The reference ID of proposals.
      *@param _gaIndex The index of the addressed GA.
      */
-    function setProposalToGA(bytes32 _proposalID, uint256 _gaIndex) public returns (bool) {
+    function setProposalToGA(bytes32 _proposalID, uint256 _gaIndex) public memberOnly returns (bool) {
         require(proposalsCanBeSetForNextGA[_proposalID] == true);
         require(gaProposalAdditionalsList[_proposalID].actionType != ActionType.proposeDelegateCandidancy);
         uint256 _startingTime = gaManager.getTimeIfNextGAExistsAndNotYetFullyBooked(_gaIndex);
