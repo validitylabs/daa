@@ -84,10 +84,6 @@ contract Wallet is Ownable {
         }
     }
 
-    function testGetAllowance(address _adr) public view returns (uint256) {
-        return allowance[_adr];
-    }
-
     /**
      *@title When smth happened, change the external wallet addres to the new one. 
      *@dev This is owner-only, which is DAA only

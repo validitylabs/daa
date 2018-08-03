@@ -237,7 +237,7 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         let balanceBefore = await WalletInstance.totalBalance();
         let totalAllowanceBefore = await WalletInstance.totalAllowance();
         let balanceOfInternalWalletBefore = web3.eth.getBalance(WalletInstance.address);
-        
+
         assert.equal(balanceBefore, memberContribution, 'These two ways of getting balance result in different values.');
         assert.equal(balanceOfInternalWalletBefore, memberContribution, 'The current balance does not equal to the total contribution of three members'); 
         assert.equal(totalAllowanceBefore, proposalAllowance, 'Current allowance is not zero'); 
@@ -257,6 +257,10 @@ contract('Membership Test (without DAO Token)', (accounts) => {
         assert.equal(balanceAfter, memberContribution - proposalAllowance , 'These two ways of getting balance result in different values.');
         assert.equal(balanceOfInternalWalletAfter, memberContribution - proposalAllowance , 'The current balance does not equal to the total contribution of three members'); 
         assert.equal(totalAllowanceAfter, 0, 'Current allowance is not zero'); 
+    });
+
+    it('should test if a GA proposal () is successful', async ()=> {
+
     });
 
 

@@ -58,27 +58,55 @@ contract GAManager is Ownable {
     uint256 constant VOTINGTIMEGAP_BETWEENPROPOSALS_GA = 3 minutes;
     uint256 constant VOTINGDURITION_PROPOSAL_GA = 10 minutes;
 
+    /**
+     *@dev Check if there is still a GA planned in the pipeline
+     */
     modifier scheduledGAExists {
         require(currentIndex > 0);
         _;
     }
 
+    /**
+     *@dev Check if the current time is still before the closest GA startes.
+     */
     modifier beforeGAstarts {
-        require(scheduledGA[currentIndex].GAStartTime.add(scheduledGA[currentIndex].GADuration).isFinished(now));
+        require(scheduledGA[currentIndex].GAStartTime.add(scheduledGA[currentIndex].GADuration).isFinished(block.timestamp));
         _;
     }
 
+    /**
+     *@dev Check if the message is called by the proposal manager.
+     */
     modifier proposalOnly {
         require(msg.sender == address(proposalGate));
         _;
     }
 
+    /**
+     *@dev Check if the proposed GA date respect the requirement of not being too close to other scheduled GAs.
+     */
     modifier shouldInSpan(uint256 _proposedGADate, bool _isExtraGA) {
         if (_isExtraGA) {
-            require(_proposedGADate.isInside(now, TIMESPAN_EXTRAGA));
+            require(_proposedGADate.isInside(block.timestamp, TIMESPAN_EXTRAGA));
         } else {
-            require(_proposedGADate.isInside(now, TIMESPAN_GA));
+            require(_proposedGADate.isInside(block.timestamp, TIMESPAN_GA));
         }
+        _;
+    }
+
+    /**
+     *@dev Check if the proposal has been concluded as sucessful, via its ID.
+     */
+    modifier successfulProposal(bytes32 _proposalID) {
+        require(proposalGate.getProposalFinalResult(_proposalID));
+        _;
+    }
+
+    /**
+     *@dev Check if the address is empty or not 
+     */
+    modifier notEmpty(address _adr) {
+        require(_adr != 0x0);
         _;
     }
 
@@ -99,8 +127,8 @@ contract GAManager is Ownable {
      *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
      *@param _newAccessible The address of the new membership contract.
      */
-    function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
-        require(_newAccessible != 0x0);
+    function updateMembershipContractAddress(address _newAccessible) public onlyOwner notEmpty(_newAccessible) {
+        // require(_newAccessible != 0x0);
         accessibleGate = Accessible(_newAccessible);
     }
 
@@ -109,8 +137,8 @@ contract GAManager is Ownable {
      *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
      *@param _newProposal The address of the new proposal manager contract.
      */
-    function updateProposalContractAddress(address _newProposal) public onlyOwner {
-        require(_newProposal != 0x0);
+    function updateProposalContractAddress(address _newProposal) public onlyOwner notEmpty(_newProposal) {
+        // require(_newProposal != 0x0);
         proposalGate = ProposalInterface(_newProposal);
     }
 
@@ -272,8 +300,8 @@ contract GAManager is Ownable {
     }
 
     //@TODO if by defaut, it's 60 min
-    function setExtraordinaryGA(bytes32 _proposalID) public returns (bool) {
-        require(proposalGate.getProposalFinalResult(_proposalID));
+    function setExtraordinaryGA(bytes32 _proposalID) public successfulProposal(_proposalID) returns (bool) {
+        // require(proposalGate.getProposalFinalResult(_proposalID));
         require(proposalGate.checkActionIsSuccessfulGA(_proposalID));
         uint256 _nextGATime = proposalGate.getProposalProposedDate(_proposalID);
         require(canSetGA(_nextGATime, true));
@@ -315,9 +343,9 @@ contract GAManager is Ownable {
     /**
      *@dev Upon the success of the correct type of proposal.
      */
-    function setNewStatute(bytes32 _proposalID) public returns (bool) {
+    function setNewStatute(bytes32 _proposalID) public successfulProposal(_proposalID) returns (bool) {
         // upon proposal success
-        require(proposalGate.getProposalFinalResult(_proposalID));
+        // require(proposalGate.getProposalFinalResult(_proposalID));
         require(proposalGate.checkActionIsStatute(_proposalID));
 
         bytes32 _newHash = proposalGate.getProposalStatute(_proposalID);

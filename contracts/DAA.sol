@@ -50,6 +50,11 @@ contract DAA {
         _;
     }
 
+    modifier treasuryOnly {
+        require(msg.sender == address(treasuryContract));
+        _;
+    }
+
     // new function that updates one address per time
     function updateMembershipAddress(address _newAdr) proposalOnly external {
         membershipContract = Membership(_newAdr);
@@ -80,13 +85,13 @@ contract DAA {
         membershipContract.updateGAContractAddress(_newAdr);
     }
 
-    function updateInternalWallet(address _newAdr) external {
-        require(msg.sender == address(treasuryContract));
+    function updateInternalWallet(address _newAdr) external treasuryOnly {
+        // require(msg.sender == address(treasuryContract));
         walletAddress = _newAdr;
     }
 
-    function updateExternalWallet(address _newAdr) external {
-        require(msg.sender == address(treasuryContract));
+    function updateExternalWallet(address _newAdr) external treasuryOnly {
+        // require(msg.sender == address(treasuryContract));
         externalWalletAddress = _newAdr;
     }
 

@@ -29,7 +29,8 @@ Some possible attack vectors (e.g. double spending, theft, or signature forgery)
 5. When multiple people want to propose their candidancy, each of their candidancy has their own proposalID. All these proposalIDs are under the category of "delegateCandidancy". Members, during GA, can only vote for one of these open "Candidancy proposals".
 6. What is the quorum for such delegate candiate proposal? Minimum participant numbers or/and minimum number in favor of the proposal?
 7. What if the member who supposed to be elected as new delegate is got expelled via a GA proposal at the same time?
-8. Can / Is it compulsary to propose delegate candidancy at GA?
+8. ~~Can / Is it compulsary to propose delegate candidancy at GA?~~
+9. Tenure of the delegate position? Regulation of re-election?
 
 #### Vote for proposals at GA
 
@@ -42,7 +43,7 @@ Some possible attack vectors (e.g. double spending, theft, or signature forgery)
 
 Although an emergant GA can be initiated and set by the DAA members, there's a standard time for such extraordinary GA. Limited to 60 minutes? 
 
-1. What if a GA proposal is still under voting phase, but the GA is over.? How to match the timing??
+1. ~~What if a GA proposal is still under voting phase, but the GA is over.? How to match the timing??~~
 
 #### Dissolution
 

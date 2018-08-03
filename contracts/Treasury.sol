@@ -54,6 +54,14 @@ contract Treasury is Ownable{
     }
 
     /**
+     *@dev Check if an adress is not empty.
+     */
+    modifier notEmpty(address _adr) {
+        require(_adr != 0x0);
+        _;
+    }
+
+    /**
      *@title contructor of the treasury
      *@dev The treasury operates the two wallets, therefore their addresses are needed.
      *     Treasury also needs to double check with the status of each member.
@@ -75,8 +83,8 @@ contract Treasury is Ownable{
      *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
      *@param _newAccessible The address of the new membership contract.
      */
-    function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
-        require(_newAccessible != 0x0);
+    function updateMembershipContractAddress(address _newAccessible) public onlyOwner notEmpty(_newAccessible) {
+        // require(_newAccessible != 0x0);
         accessibleGate = Accessible(_newAccessible);
     }
 
@@ -85,8 +93,8 @@ contract Treasury is Ownable{
      *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
      *@param _newProposal The address of the new proposal manager contract.
      */
-    function updateProposalContractAddress(address _newProposal) public onlyOwner {
-        require(_newProposal != 0x0);
+    function updateProposalContractAddress(address _newProposal) public onlyOwner notEmpty(_newProposal) {
+        // require(_newProposal != 0x0);
         proposalGate = ProposalInterface(_newProposal);
     }
 
@@ -108,10 +116,6 @@ contract Treasury is Ownable{
         }
     }
 
-    function testGetCleared(bytes32 _proposalID) public view returns (bool) {
-        return cleared[_proposalID];
-    }
-    
     /**
      *@title Member pay annual membership fee with this function
      *@dev Transfer the money to the wallet.
