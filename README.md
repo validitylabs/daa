@@ -151,5 +151,7 @@ We need to run the *setProposalToGA* first, so that the special proposals are se
 
 ## Dev tools
 
-1. Web template [HTML5 Boilerplate] (<https://github.com/h5bp/html5-boilerplate>)
+1. Web template 
+   1. [HTML5 Boilerplate] (<https://github.com/h5bp/html5-boilerplate>)
+   2. [Adminator HTML5 Admin Template] (https://github.com/puikinsh/Adminator-admin-dashboard#installing--local-development)
 
