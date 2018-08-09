@@ -148,3 +148,8 @@ We need to run the *setProposalToGA* first, so that the special proposals are se
 ## Reference
 
 1. Swiss Civil Code of 10 December 2017 https://www.admin.ch/opc/en/classified-compilation/19070042/index.html#
+
+## Dev tools
+
+1. Web template [HTML5 Boilerplate] (<https://github.com/h5bp/html5-boilerplate>)
+
