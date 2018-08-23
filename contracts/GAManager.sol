@@ -159,7 +159,7 @@ contract GAManager is Ownable {
     }
 
     /**
-     *@title Assign all the candidancy proposals that are in the pipeline to the target GA.
+     *@title Assign all the candidacy proposals that are in the pipeline to the target GA.
      *@param _proposalID The reference ID of proposals.
      *@param _gaIndex The index of the target GA. 
      */
