@@ -50,8 +50,8 @@ contract GAManager is Ownable {
     uint256 constant CLOSEST_FUTURE_GA = 4 weeks;           // The annual GA can only be set in 4 weeks.
     uint256 constant MIN_INTERVAL_GA = 36 weeks;            // There should be min 9 months between two GAs.
     //@TODO Check whether thest special constants are needed or not. If not, all the GA follows the same rule of settlement.
-    uint256 constant TIMESPAN_EXTRAGA = 104 weeks;          // Members can propose an extraordinary GA that takes place in max. 2 years.
-    uint256 constant CLOSEST_FUTURE_EXTRAGA = 4 weeks;      // The extraordinary GA can be held in 4 weeks, starting from now.
+    uint256 constant TIMESPAN_EXTRAGA = 24 weeks;          // Members can propose an extraordinary GA that takes place in max. 6
+    uint256 constant CLOSEST_FUTURE_EXTRAGA = 3 weeks;      // The extraordinary GA can be held in 3 weeks, starting from now.
     uint256 constant MIN_INTERVAL_EXTRAGA = 36 weeks;       // There should be minimum 9 months of time between two extraordinary GA. 
     uint256 constant MIN_INTERVAL_GA_EXTRAGA = 8 weeks;     // There should be a minimum amount of time for two GAs to be held (regardless their type)
     uint256 constant STANDARDGA_DURATION = 60 minutes;
