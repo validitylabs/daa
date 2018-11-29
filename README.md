@@ -38,7 +38,7 @@ The description is architecture agnostic but aims at being implemented on the Et
 
 The DAAS represented by one natural person (delegate), who holds the office for x years. There are at least two white-listers who examine membership applications. 
 
-![Imgur](https://i.imgur.com/RE5YQMo.png){:height="24px" width="48px"}
+<img src="https://i.imgur.com/RE5YQMo.png" width="700">
 
 To request membership, the prospective member needs:
 
