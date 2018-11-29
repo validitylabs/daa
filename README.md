@@ -4,7 +4,7 @@ This document describes the technical specifications of the DAAS project with a 
 
 - [Decentralised Autonomous Association Switzerland – DAAS](#decentralised-autonomous-association-switzerland-%E2%80%93-daas)
     - [Goal](#goal)
-    - [Bref introduction to DAAS](#bref-introduction-to-daas)
+    - [Brief introduction to DAAS](#bref-introduction-to-daas)
     - [Architecture](#architecture)
         - [contracts](#contracts)
         - [Functions](#functions)
