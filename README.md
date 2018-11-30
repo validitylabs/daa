@@ -4,7 +4,7 @@ This document describes the technical specifications of the DAAS project with a 
 
 - [Decentralised Autonomous Association Switzerland – DAAS](#decentralised-autonomous-association-switzerland-%E2%80%93-daas)
     - [Goal](#goal)
-    - [Bref introduction to DAAS](#bref-introduction-to-daas)
+    - [Brief introduction to DAAS](#bref-introduction-to-daas)
     - [Architecture](#architecture)
         - [contracts](#contracts)
         - [Functions](#functions)
@@ -34,11 +34,11 @@ The goal of this project is to create a decentralized autonomous association (DA
 
 The description is architecture agnostic but aims at being implemented on the Ethereum public blockchain.
 
-## Bref introduction to DAAS
+## Brief introduction to DAAS
 
 The DAAS represented by one natural person (delegate), who holds the office for x years. There are at least two white-listers who examine membership applications. 
 
-![Imgur](https://i.imgur.com/RE5YQMo.png)
+<img src="https://i.imgur.com/RE5YQMo.png" width="700">
 
 To request membership, the prospective member needs:
 
