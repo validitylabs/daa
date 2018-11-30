@@ -91,7 +91,7 @@ To conclude a proposal:
 | -------------------------------- | ------------- | ----------- | ------------- | -------------- | --------------- | --------------- | --------------- | ---------------------------------- |
 | createDelegateCandidancyProposal | 0             | 0           | msg.sender    | 0              | ""              | 0x0             | 0x0             | Yes                                |
 | createGADateProposal             | _votingStarts | _votingEnds | 0x0           | _proposedTime  | ""              | 0x0             | 0x0             | No                                 |
-| createDissolutionProposal        | 0             | 0           | 0x0           | 0              | ""              | 0x0             | 0x0             | Yes                                |
+| createcProposal                  | 0             | 0           | 0x0           | 0              | ""              | 0x0             | 0x0             | Yes                                |
 | createUpdateStatuteProposal      | 0             | 0           | 0x0           | 0              | _newHash        | 0x0             | 0x0             | Yes                                |
 | createExpelMemberProposal        | _startingTime | _endingTime | _targetMember | 0              | ""              | 0x0             | 0x0             | No                                 |
 | createUpdateWalletProposal       | 0             | 0           | 0x0           | 0              | ""              | _internalWallet | _externalWallet | Yes                                |
@@ -148,3 +148,9 @@ We need to run the *setProposalToGA* first, so that the special proposals are se
 ## Reference
 
 1. Swiss Civil Code of 10 December 2017 https://www.admin.ch/opc/en/classified-compilation/19070042/index.html#
+
+
+## Dev tools
+
+1. Web template: [Adminator HTML5 Admin Template](https://github.com/puikinsh/Adminator-admin-dashboard#installing--local-development)
+2. Smart contract dev tool: Truffle

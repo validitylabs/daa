@@ -81,7 +81,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     mapping(bytes32=>ProposalAdditionals) public proposalAdditionalsList;
     mapping(bytes32=>GAProposalAdditionals) public gaProposalAdditionalsList;
    
-    //@TODO The candidancyForDeligate is stored separately...(cause Solidity does not allow this one)
+    //@TODO The candidacyForDeligate is stored separately...(cause Solidity does not allow this one)
     //      WHAT IF! There are several ongoing GA prooposal that is proposed for the newdelegate...
     //      The solution may be: using this mapping that links structs into this public variable... which is in parallel to the gaProposalAdditionalsList.
     TallyClerkLib.VotesForDelegate public votesForDelegateProposal;
@@ -205,7 +205,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     //======================================================================================
 
     /**
-     *@title Propose their own candidancy for the next (replacing) delegate
+     *@title Propose their own candidacy for the next (replacing) delegate
      *@notice People can propose outside GA but only during GA can one vote.
      */
     function createDelegateCandidancyProposal (
@@ -397,7 +397,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
     /**
      *@title New method of allocating a GA proposal (except for the delegate election) to a scheduled GA
      *@dev   Need to make sure that the current GA proposal has not yet be assigned.
-     *@notice Delegate candidancy related proposals cannot be set via such function but another one. 
+     *@notice Delegate candidacy related proposals cannot be set via such function but another one. 
      *@param _proposalID The reference ID of proposals.
      *@param _gaIndex The index of the addressed GA.
      */
@@ -417,7 +417,7 @@ contract ProposalManager is MinimalProposal, Ownable {   // Accessible
 
     /**
      *@title Conclude the current concludable proposal
-     *@dev Conclude delegate candidancy is implemented in a separate function.
+     *@dev Conclude delegate candidacy is implemented in a separate function.
      *@notice This function shall be called by anyone, even non-members.
      */
     //@TODO Implement the proposeDelegateCandidancy!!!

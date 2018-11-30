@@ -50,35 +50,63 @@ contract GAManager is Ownable {
     uint256 constant CLOSEST_FUTURE_GA = 4 weeks;           // The annual GA can only be set in 4 weeks.
     uint256 constant MIN_INTERVAL_GA = 36 weeks;            // There should be min 9 months between two GAs.
     //@TODO Check whether thest special constants are needed or not. If not, all the GA follows the same rule of settlement.
-    uint256 constant TIMESPAN_EXTRAGA = 104 weeks;          // Members can propose an extraordinary GA that takes place in max. 2 years.
-    uint256 constant CLOSEST_FUTURE_EXTRAGA = 4 weeks;      // The extraordinary GA can be held in 4 weeks, starting from now.
+    uint256 constant TIMESPAN_EXTRAGA = 24 weeks;          // Members can propose an extraordinary GA that takes place in max. 6
+    uint256 constant CLOSEST_FUTURE_EXTRAGA = 3 weeks;      // The extraordinary GA can be held in 3 weeks, starting from now.
     uint256 constant MIN_INTERVAL_EXTRAGA = 36 weeks;       // There should be minimum 9 months of time between two extraordinary GA. 
     uint256 constant MIN_INTERVAL_GA_EXTRAGA = 8 weeks;     // There should be a minimum amount of time for two GAs to be held (regardless their type)
     uint256 constant STANDARDGA_DURATION = 60 minutes;
     uint256 constant VOTINGTIMEGAP_BETWEENPROPOSALS_GA = 3 minutes;
     uint256 constant VOTINGDURITION_PROPOSAL_GA = 10 minutes;
 
+    /**
+     *@dev Check if there is still a GA planned in the pipeline
+     */
     modifier scheduledGAExists {
         require(currentIndex > 0);
         _;
     }
 
+    /**
+     *@dev Check if the current time is still before the closest GA startes.
+     */
     modifier beforeGAstarts {
-        require(scheduledGA[currentIndex].GAStartTime.add(scheduledGA[currentIndex].GADuration).isFinished(now));
+        require(scheduledGA[currentIndex].GAStartTime.add(scheduledGA[currentIndex].GADuration).isFinished(block.timestamp));
         _;
     }
 
+    /**
+     *@dev Check if the message is called by the proposal manager.
+     */
     modifier proposalOnly {
         require(msg.sender == address(proposalGate));
         _;
     }
 
+    /**
+     *@dev Check if the proposed GA date respect the requirement of not being too close to other scheduled GAs.
+     */
     modifier shouldInSpan(uint256 _proposedGADate, bool _isExtraGA) {
         if (_isExtraGA) {
-            require(_proposedGADate.isInside(now, TIMESPAN_EXTRAGA));
+            require(_proposedGADate.isInside(block.timestamp, TIMESPAN_EXTRAGA));
         } else {
-            require(_proposedGADate.isInside(now, TIMESPAN_GA));
+            require(_proposedGADate.isInside(block.timestamp, TIMESPAN_GA));
         }
+        _;
+    }
+
+    /**
+     *@dev Check if the proposal has been concluded as sucessful, via its ID.
+     */
+    modifier successfulProposal(bytes32 _proposalID) {
+        require(proposalGate.getProposalFinalResult(_proposalID));
+        _;
+    }
+
+    /**
+     *@dev Check if the address is empty or not 
+     */
+    modifier notEmpty(address _adr) {
+        require(_adr != 0x0);
         _;
     }
 
@@ -99,8 +127,8 @@ contract GAManager is Ownable {
      *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
      *@param _newAccessible The address of the new membership contract.
      */
-    function updateMembershipContractAddress(address _newAccessible) public onlyOwner {
-        require(_newAccessible != 0x0);
+    function updateMembershipContractAddress(address _newAccessible) public onlyOwner notEmpty(_newAccessible) {
+        // require(_newAccessible != 0x0);
         accessibleGate = Accessible(_newAccessible);
     }
 
@@ -109,8 +137,8 @@ contract GAManager is Ownable {
      *@dev This function can only be called by the DAA, eventually trigged by a successful proposal
      *@param _newProposal The address of the new proposal manager contract.
      */
-    function updateProposalContractAddress(address _newProposal) public onlyOwner {
-        require(_newProposal != 0x0);
+    function updateProposalContractAddress(address _newProposal) public onlyOwner notEmpty(_newProposal) {
+        // require(_newProposal != 0x0);
         proposalGate = ProposalInterface(_newProposal);
     }
 
@@ -131,7 +159,7 @@ contract GAManager is Ownable {
     }
 
     /**
-     *@title Assign all the candidancy proposals that are in the pipeline to the target GA.
+     *@title Assign all the candidacy proposals that are in the pipeline to the target GA.
      *@param _proposalID The reference ID of proposals.
      *@param _gaIndex The index of the target GA. 
      */
@@ -272,8 +300,8 @@ contract GAManager is Ownable {
     }
 
     //@TODO if by defaut, it's 60 min
-    function setExtraordinaryGA(bytes32 _proposalID) public returns (bool) {
-        require(proposalGate.getProposalFinalResult(_proposalID));
+    function setExtraordinaryGA(bytes32 _proposalID) public successfulProposal(_proposalID) returns (bool) {
+        // require(proposalGate.getProposalFinalResult(_proposalID));
         require(proposalGate.checkActionIsSuccessfulGA(_proposalID));
         uint256 _nextGATime = proposalGate.getProposalProposedDate(_proposalID);
         require(canSetGA(_nextGATime, true));
@@ -315,9 +343,9 @@ contract GAManager is Ownable {
     /**
      *@dev Upon the success of the correct type of proposal.
      */
-    function setNewStatute(bytes32 _proposalID) public returns (bool) {
+    function setNewStatute(bytes32 _proposalID) public successfulProposal(_proposalID) returns (bool) {
         // upon proposal success
-        require(proposalGate.getProposalFinalResult(_proposalID));
+        // require(proposalGate.getProposalFinalResult(_proposalID));
         require(proposalGate.checkActionIsStatute(_proposalID));
 
         bytes32 _newHash = proposalGate.getProposalStatute(_proposalID);

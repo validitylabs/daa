@@ -16,33 +16,49 @@ Some possible attack vectors (e.g. double spending, theft, or signature forgery)
 
   However, according to the Swiss Civil Code Art. 70 *Membership is neither transferable nor heritable*
 
+### General Assembly
+
+There are two types of General Assembly (GA) available in the DAA. One is the ordinary GA, set by the delegate - ideally once per year aiming at gathering all members; The other one is the extraordinary GA - proposed by any member and set upon a successful proposal. Such proposal could be initiated by any member for (legitim reasons) in case of emergency and voted by all members. 
+
+#### Prevent the spam of GA proposals
+
+The freedom of proposal extraordinary GA leaves potential for malicious members of taking such advantage and spam the association with too many extraordinary GAs and postpone/push the useful extraordinary GA late, providing the proposals are assigned upfront to a particular GA. e.g. When a delegate proposal or change statues proposal is set for the closest GA at the moment of creation (e.g. in one year and a half), if the rules allowed, multiple other GAs could be arranged before such GA happens and other members could propose other changes in statutes   that block the "important" proposal. Or the "important" proposal is very urgent and needs to be voted ASAP but not able to plan forwards.
+
+#### Specific problems
+
+1. Apart from the source of proposal, is there any other difference between these two GAs?
+2. What is the minimum time interval (allowed/min/max frequency and length) for such kind of extraordinary GA? 
+3. What are the criteria for ordinary (annual) GAs? 
+4. Is there any other regulation for the time distance between extra- and ordinary GA? 
+5. If there any obligation for delegate to have annual GA? How flexible delegate can be? Exactly one GA per calendar year / elected year? Or only need to have certain GAs during the elected period where on average there is one per year? 
+6. For both kinds of GA, is there any limits of timing? e.g. I can plan for max. in two years.
+7. Any other additional requirements for the GA?
+
 ### GA Proposal
 
 #### Propose a new delegate
 
-1. What if there are multiple proposals for the
-2. Difference between "step down and propose delegate" and "propose new delegate". The former one implies the current delegate is no longer in charge of the DAO, aka delegate = 0x0. In this case, the association is operating without legal representative, therefore payout is no longer active (There is a need of having a main valve in the Tresury contract for such purpose). The latter one allows a election happening before the current term finishes. 
+1. What if there are several rounds of re-election of delegate candidacy and the total duration exceeds the planned GA?
+2. Difference between "step down and propose delegate" and "propose new delegate". The former one implies the current delegate is no longer in charge of the DAO, aka delegate = 0x0. In this case, the association is operating without legal representative, therefore payout is no longer active (There is a need of having a main valve in the Treasury contract for such purpose). The latter one allows an election happening before the current term finishes. 
 3. When the new delegate proposal is ready to be initiated. a check on the starting time is needed
-   1. In the latter case, since such election is preventive, there is a need to chek a minimum time gap between the two similar proposals. 
+   1. In the latter case, since such election is preventive, there is a need to check a minimum time gap between the two similar proposals. 
    2. In the first case, the election is very emergent. If the initiator is the delegate, there is no need to respect the time gap. 
-4. Everyone can propose their candidancy at any time, but one can only propose the candidancy for the next election that will happen at the next closest GA. If the next GA is scheduled in one month and the second next is scheduled in 1 year, one cannot propose his delegate candidancy directly for the one in 1 year and skipping the current one. The proposal for candidacy does not need to be during GA, but before the GA.
-5. When multiple people want to propose their candidancy, each of their candidancy has their own proposalID. All these proposalIDs are under the category of "delegateCandidancy". Members, during GA, can only vote for one of these open "Candidancy proposals".
-6. What is the quorum for such delegate candiate proposal? Minimum participant numbers or/and minimum number in favor of the proposal?
+4. Everyone can propose their candidacy at any time, but one can only propose the candidacy for the next election that will happen at the next closest GA. If the next GA is scheduled in one month and the second next is scheduled in 1 year, one cannot propose his delegate candidacy directly for the one in 1 year and skipping the current one. The proposal for candidacy does not need to be during GA, but before the GA.
+5. When multiple people want to propose their candidacy, each of their candidacy has their own proposalID. All these proposalIDs are under the category of "delegatecandidacy". Members, during GA, can only vote for one of these open "candidacy proposals".
+6. What is the quorum for such delegate candidate proposal? Minimum participant numbers or/and minimum number in favor of the proposal?
 7. What if the member who supposed to be elected as new delegate is got expelled via a GA proposal at the same time?
-8. Can / Is it compulsary to propose delegate candidancy at GA?
+8. Tenure of the delegate position? Regulation of re-election?
 
 #### Vote for proposals at GA
 
-1. Who sets the order of the opening proposals?  (accroding to the order in the array?) The first one starts its voting slot as long as the clock hits the GA starting time.
+1. Who sets the order of the opening proposals?  (according to the order in the array?) The first one starts its voting slot as long as the clock hits the GA starting time.
 2. Whether the member can decide the duration of the extraordinary GA? 
 3. All the voting happens during GA lasts for 10 minutes?
 4. The quorum: vote yes number is based on the participant number, or it is based on the total number?
 
 #### Proposal for extraordinary GA and GA
 
-Although an emergant GA can be initiated and set by the DAA members, there's a standard time for such extraordinary GA. Limited to 60 minutes? 
-
-1. What if a GA proposal is still under voting phase, but the GA is over.? How to match the timing??
+Although an emergent GA can be initiated and set by the DAA members, there's a standard time for such extraordinary GA. Limited to 60 minutes? 
 
 #### Dissolution
 
@@ -60,27 +76,25 @@ What will happen exactly when dissolution??
 3. Right now we allow to expel whitelister because if the whitelister can also be a member. If the whitelister is 
 4. Delegate cannot be expelled directly. If one wants delegate be out of the association, there are some options:
 
-- Proposese candidate delegate and got selected
+- Propose candidate delegate and got selected
 - Step down voluntarily (and propose GA)
 
-1. What's the difference between "step down" and "discharge" ??
+1. What's the difference between "step down" and "discharge"??
 2. Whether to implement the resignation (cf. Art. 70) *All members have a legal right to resign subject to six months' notice expiring at the end of the calendar year or, if an administrative period is provided for, at the end of such period.*
 
 #### Membership fee
 
-Annual fee...
+Annual fee? When to check? If the fee is delayed then what will happen exactly?
 
-Is the membership compulsory or voluntary? Do we allow voluntary contribution (with extra amount)? Does the amount depend on the position or strictly same fee or there is a minimum contribution then the more it donates.
+Is the membership compulsory or voluntary? Do we allow voluntary contribution (with extra amount)? Does the amount depend on the position or strictly same fee or there is a minimum contribution then the more it donates?
 
 Further steps, to introduce the stake/token, the heavier the stake/vote weight it has.
 
 Is it refundable? Nope... but a proposal is possible for payback the accidental extra payment
 
-voluntary donation is welcome
+voluntary donation is welcomed?
 
 ### Ordinary proposal
-
-To make an ordinary proposal, it follows: 
 
 Is it possible to be destructed before it’s concluded by the owner?
 
@@ -88,16 +102,7 @@ External donation can only be accepted when the proposal is created (open and be
 
 At the moment, the proposal initiator is not automatically voting "yes".
 
-The payout function for external funds is freezed or not during the 
-
-### General Assembly
-
-There are two types of General Assembly (GA). One is the ordinary GA, set by the delegate; The other one is the extraordinary GA, set by a proposal. Such proposal should be initiated by any member in case of emergency and voted by all members. 
-
-1. What is the minimum time interval for such kind of extraordinary GA: Frequency and length ? What are the criteria for ordinary (annual) GAs? Is there any other regulation for the time distance between extra- and ordinary GA? 
-2. If there any obligation for delegate to have annual GA? How flexible delegate can be? Exactly one GA per calendar year / elected year? Or only need to have certain GAs during the elected period where on average there is one per year? 
-3. For both kinds of GA, is there any limits of timing? e.g. I can plan for max. in two years.
-4. Any other additonal requirements for the GA?
+The payout function for external funds is frozen or not during the GA?
 
 ## Procedure
 
@@ -139,7 +144,7 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
 
 - [ ] Currently there's no punishment for members who do not pay their membership fee on time. Some possible action could be: disable the account until the accumulated missing fee is paid.
 
-- [ ] **Fix the proposeDelegateCandidancy: ProposalManager.sol (line 369)**
+- [ ] **Fix the proposeDelegatecandidacy: ProposalManager.sol (line 369)**
 
 - [ ] Fix the conclusion of delegate candidate proposal. When getting the result the initial voting (or the second round of the revoting) setting up the proposals to be revoted 
 
@@ -166,11 +171,10 @@ There are two types of General Assembly (GA). One is the ordinary GA, set by the
   - [ ] Possible solution: cost for creating a GA proposal
   - [ ] Possible soluiton: limited number of GA proposal per member
 
-- [ ] Set GA proposal to GA is located in ProposalManager.sol but set delegate candidancy proposal is located in GAManager.sol
+- [ ] Set GA proposal to GA is located in ProposalManager.sol but set delegate candidacy proposal is located in GAManager.sol
 
-- [ ] Before concluding the candidancy proposals -> new proposals are not taken into account ... LOL
+- [ ] Before concluding the candidacy proposals -> new proposals are not taken into account ... LOL
 
-  
 
 ## Testing
 
