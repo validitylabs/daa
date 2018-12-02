@@ -30,39 +30,53 @@ This document describes the technical specifications of the DAAS project with a 
 
 ## Goal
 
-The goal of this project is to create a decentralized autonomous association (DAO) that represents digitally and legitimely a Swiss association. 
+The goal of this project is to create a decentralized autonomous association (DAA) that represents digitally and legitimely a Swiss association. 
 
 The description is architecture agnostic but aims at being implemented on the Ethereum public blockchain.
 
-## Brief introduction to DAAS
+## Brief introduction to the decentralized autonomous association (DAAS)
 
-The DAAS represented by one natural person (delegate), who holds the office for x years. There are at least two white-listers who examine membership applications. 
+The DAAS is suitable for any Swiss association incorporated under the [Swiss Civil Code](https://www.admin.ch/opc/en/classified-compilation/19070042/index.html#). It is represented by one natural person (delegate), who holds the office for x years and is eligible to perform certain managerial tasks including setting annual general assembly (GA) of all members. Members are accepted upon successful whitelisting and payment of membership fee. There should be at least two white-listers who examine membership applications for the DAAS. The delegate is a special member of the DAAS. While whitelisters do not necessarily need to 
 
-<img src="https://i.imgur.com/RE5YQMo.png" width="700">
+<p align="center">
+    <img src="https://i.imgur.com/RE5YQMo.png" width="350" alt="Membership structure of the DAAS consists of one delegate and at least two whitelisters. The delegate should be a member of the association. While whitelisters do not necessarily need to be so. " title="Membership structure of the DAAS">
+</p>
 
 To request membership, the prospective member needs:
 
-![Imgur](https://i.imgur.com/4txsi31.png)
+<p align="center">
+    <img src="https://i.imgur.com/4txsi31.png" width="350">
+</p>
 
 Then white-listers need to:
 
-![Imgur](https://i.imgur.com/FTI0lU5.png) 
+<p align="center">
+    <img src="https://i.imgur.com/FTI0lU5.png" width="500">
+</p>
 
 Upon success, the person is ready to become a new member. The only step left is to pay the membership fee, as:
 
-![Imgur](https://i.imgur.com/x4r6Z1H.png)
+<p align="center">
+    <img src="https://i.imgur.com/x4r6Z1H.png" width="400">
+</p>
 
 Each member has equal rights to initiate a propose, as well as vote on them. A typical voting process is like below
 
-![Imgur](https://i.imgur.com/fKkkzgZ.png)
+<p align="center">
+    <img src="https://i.imgur.com/fKkkzgZ.png" width="300">
+</p>
 
 To vote for an ordinary proposal: 
 
-![Imgur](https://i.imgur.com/jPX2zln.png)
+<p align="center">
+    <img src="https://i.imgur.com/jPX2zln.png" width="400">
+</p>
 
 To conclude a proposal: 
 
-![Imgur](https://i.imgur.com/rbM1VLi.png)
+<p align="center">
+    <img src="https://i.imgur.com/rbM1VLi.png" width="400">
+</p>
 
 ## Architecture
 
@@ -91,7 +105,7 @@ To conclude a proposal:
 | -------------------------------- | ------------- | ----------- | ------------- | -------------- | --------------- | --------------- | --------------- | ---------------------------------- |
 | createDelegateCandidancyProposal | 0             | 0           | msg.sender    | 0              | ""              | 0x0             | 0x0             | Yes                                |
 | createGADateProposal             | _votingStarts | _votingEnds | 0x0           | _proposedTime  | ""              | 0x0             | 0x0             | No                                 |
-| createDissolutionProposal        | 0             | 0           | 0x0           | 0              | ""              | 0x0             | 0x0             | Yes                                |
+| createcProposal                  | 0             | 0           | 0x0           | 0              | ""              | 0x0             | 0x0             | Yes                                |
 | createUpdateStatuteProposal      | 0             | 0           | 0x0           | 0              | _newHash        | 0x0             | 0x0             | Yes                                |
 | createExpelMemberProposal        | _startingTime | _endingTime | _targetMember | 0              | ""              | 0x0             | 0x0             | No                                 |
 | createUpdateWalletProposal       | 0             | 0           | 0x0           | 0              | ""              | _internalWallet | _externalWallet | Yes                                |
@@ -104,13 +118,18 @@ To conclude a proposal:
 
 To make a GA proposal, it follows the procedure below:
 
-![Imgur](https://i.imgur.com/yBGiJMP.png)
+<p align="center">
+    <img src="https://i.imgur.com/yBGiJMP.png" width="400">
+</p>
+
 
 ### Ordinary proposal
 
 To make an ordinary proposal, it follows: 
+<p align="center">
+    <img src="https://i.imgur.com/y5yI5Ex.png" width="400">
+</p>
 
-![Imgur](https://i.imgur.com/y5yI5Ex.png)
 
 
 
@@ -148,3 +167,9 @@ We need to run the *setProposalToGA* first, so that the special proposals are se
 ## Reference
 
 1. Swiss Civil Code of 10 December 2017 https://www.admin.ch/opc/en/classified-compilation/19070042/index.html#
+
+
+## Dev tools
+
+1. Web template: [Adminator HTML5 Admin Template](https://github.com/puikinsh/Adminator-admin-dashboard#installing--local-development)
+2. Smart contract dev tool: Truffle

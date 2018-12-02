@@ -7,3 +7,12 @@
 /coverageEnv
 coverage.json
 /out
+
+*.docx
+*.txt
+/db
+/DevCon
+/logo
+CodeCoverageReportExtrait
+
+/web/node_modules
